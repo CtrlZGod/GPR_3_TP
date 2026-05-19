@@ -1,4 +1,8 @@
-PYTHON := $(shell which python3)
+ifdef VIRTUAL_ENV
+    PYTHON := $(VIRTUAL_ENV)/bin/python3
+else
+    PYTHON := $(shell which python3)
+endif
 
 .PHONY: all setup test teardown clean report check
 
