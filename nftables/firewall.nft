@@ -29,15 +29,23 @@ table inet firewall {
     chain input {
         type filter hook input priority 0; policy drop;
 
-        # Stateful: allow established/related, drop invalid
-        ct state established,related accept
+        # Drop invalid conntrack early
         ct state invalid drop
 
         # Loopback
         iif "lo" accept
 
-        # ICMP to firewall: rate-limited ping
-        ip protocol icmp icmp type echo-request limit rate 5/second accept
+        # ICMP echo-request rate limit: drop OVER 5/second.
+        # MUST come BEFORE the ct state established accept, otherwise
+        # subsequent pings on the same conntrack entry bypass the limit.
+        ip protocol icmp icmp type echo-request limit rate over 5/second \
+            counter drop
+
+        # Stateful: allow established/related for other protocols
+        ct state established,related accept
+
+        # ICMP echo-request within rate, and echo-reply
+        ip protocol icmp icmp type echo-request accept
         ip protocol icmp icmp type echo-reply accept
 
         # SSH only from LAN

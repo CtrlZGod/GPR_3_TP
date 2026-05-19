@@ -8,15 +8,18 @@ table ip nat {
     chain prerouting {
         type nat hook prerouting priority dstnat;
 
+        # DNAT only when destination is the firewall's WAN IP (10.0.1.1),
+        # otherwise WAN -> LAN tests would be incorrectly redirected to DMZ.
+
         # HTTP: WAN -> DMZ web server
-        iifname "veth-fw-wan" tcp dport 80 dnat to 10.0.3.10:80
+        iifname "veth-fw-wan" ip daddr 10.0.1.1 tcp dport 80 dnat to 10.0.3.10:80
 
         # HTTPS: WAN -> DMZ web server
-        iifname "veth-fw-wan" tcp dport 443 dnat to 10.0.3.10:443
+        iifname "veth-fw-wan" ip daddr 10.0.1.1 tcp dport 443 dnat to 10.0.3.10:443
 
         # DNS: WAN -> DMZ DNS server
-        iifname "veth-fw-wan" udp dport 53 dnat to 10.0.3.10:53
-        iifname "veth-fw-wan" tcp dport 53 dnat to 10.0.3.10:53
+        iifname "veth-fw-wan" ip daddr 10.0.1.1 udp dport 53 dnat to 10.0.3.10:53
+        iifname "veth-fw-wan" ip daddr 10.0.1.1 tcp dport 53 dnat to 10.0.3.10:53
     }
 
     # =============================================
