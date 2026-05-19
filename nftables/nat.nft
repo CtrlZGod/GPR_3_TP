@@ -1,0 +1,31 @@
+#!/usr/sbin/nft -f
+
+table ip nat {
+
+    # =============================================
+    # PREROUTING: DNAT - expose DMZ services to WAN
+    # =============================================
+    chain prerouting {
+        type nat hook prerouting priority dstnat;
+
+        # HTTP: WAN -> DMZ web server
+        iifname "veth-fw-wan" tcp dport 80 dnat to 10.0.3.10:80
+
+        # HTTPS: WAN -> DMZ web server
+        iifname "veth-fw-wan" tcp dport 443 dnat to 10.0.3.10:443
+
+        # DNS: WAN -> DMZ DNS server
+        iifname "veth-fw-wan" udp dport 53 dnat to 10.0.3.10:53
+        iifname "veth-fw-wan" tcp dport 53 dnat to 10.0.3.10:53
+    }
+
+    # =============================================
+    # POSTROUTING: SNAT/Masquerade for outbound traffic
+    # =============================================
+    chain postrouting {
+        type nat hook postrouting priority srcnat;
+
+        # LAN -> WAN: masquerade
+        oifname "veth-fw-wan" masquerade
+    }
+}
