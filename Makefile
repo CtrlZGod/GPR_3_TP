@@ -4,13 +4,16 @@ else
     PYTHON := $(shell which python3)
 endif
 
-.PHONY: all setup test teardown clean report check web
+.PHONY: all setup test teardown clean report check web ngrok
 
 all: setup test teardown
 
 web:
 	@echo "Starting web dashboard at http://localhost:8080 ..."
 	sudo $(PYTHON) web/server.py
+
+ngrok:
+	@PYTHON="$(PYTHON)" bash scripts/start-ngrok.sh
 
 setup:
 	sudo bash setup.sh
