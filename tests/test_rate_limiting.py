@@ -18,34 +18,33 @@ class TestICMPRateLimit:
 
     def test_ping_flood_partially_dropped(self):
         """A flood of pings should have some dropped due to rate limiting.
-        We send 20 pings as fast as possible and expect some loss."""
+        Rule is `limit rate 5/second` (default burst 5) so out of 50 pings
+        sent in under a second, most should be dropped."""
         result = run_in_ns(
             "ns-lan",
-            ["ping", "-c", "20", "-i", "0.05", "-W", "1", "10.0.2.1"],
-            timeout=10,
+            ["ping", "-c", "50", "-i", "0.01", "-W", "1", "10.0.2.1"],
+            timeout=15,
         )
-        output = result.stdout
-        # Parse packet loss percentage
-        for line in output.splitlines():
-            if "packet loss" in line:
-                # Extract percentage, e.g., "60% packet loss"
-                parts = line.split(",")
-                for part in parts:
-                    if "packet loss" in part:
-                        pct = part.strip().split("%")[0].strip()
-                        # Remove any leading text before the number
-                        pct = "".join(c for c in pct if c.isdigit() or c == ".")
-                        loss = float(pct)
-                        assert loss > 0, (
-                            "Expected some packet loss from rate limiting, "
-                            "but all pings succeeded"
-                        )
-                        return
+        # Parse "N packets transmitted, M received" line
+        transmitted = received = None
+        for line in result.stdout.splitlines():
+            if "transmitted" in line and "received" in line:
+                parts = [p.strip() for p in line.split(",")]
+                for p in parts:
+                    if "transmitted" in p:
+                        transmitted = int(p.split()[0])
+                    elif "received" in p:
+                        received = int(p.split()[0])
+                break
 
-        # If we couldn't parse loss but some pings failed, that's also valid
-        if result.returncode != 0:
-            return
-        pytest.fail("Could not parse ping output for packet loss")
+        assert transmitted is not None, (
+            f"Could not parse ping output:\n{result.stdout}"
+        )
+        assert received < transmitted, (
+            f"Expected some packets to be dropped by rate limiter, "
+            f"but {received}/{transmitted} got through. "
+            f"Rule may not be applying limit correctly."
+        )
 
 
 class TestICMPBetweenZones:

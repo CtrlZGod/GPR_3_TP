@@ -97,6 +97,25 @@ def get_nft_counters(chain_name):
     return result.stdout
 
 
+def get_rule_packets(chain_name, marker):
+    """Return the packet count of the (first) rule in `chain_name` whose
+    text contains `marker` (e.g. a log prefix like 'FW-WAN2LAN-DROP').
+    Returns 0 if the rule is not found."""
+    result = run_in_ns(
+        "ns-fw", ["nft", "list", "chain", "inet", "firewall", chain_name]
+    )
+    for line in result.stdout.splitlines():
+        if marker in line and "counter" in line:
+            # Format: ... counter packets N bytes M ...
+            tokens = line.split()
+            try:
+                idx = tokens.index("packets")
+                return int(tokens[idx + 1])
+            except (ValueError, IndexError):
+                continue
+    return 0
+
+
 def clear_dmesg(ns="ns-fw"):
     """Clear kernel log in a namespace."""
     run_in_ns(ns, ["dmesg", "--clear"])

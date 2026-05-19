@@ -79,15 +79,15 @@ table inet firewall {
         iifname "veth-fw-dmz" oifname "veth-fw-wan" udp dport 53 accept
         iifname "veth-fw-dmz" oifname "veth-fw-wan" tcp dport 53 accept
 
-        # --- ICMP between all zones ---
-        ip protocol icmp icmp type echo-request accept
-        ip protocol icmp icmp type echo-reply accept
-
-        # --- BLOCK: WAN -> LAN (never!) ---
+        # --- BLOCK: WAN -> LAN (must come BEFORE the global ICMP accept) ---
         iifname "veth-fw-wan" oifname "br-lan" log prefix "[FW-WAN2LAN-DROP] " counter drop
 
-        # --- BLOCK: DMZ -> LAN (compromised DMZ isolation) ---
+        # --- BLOCK: DMZ -> LAN (must come BEFORE the global ICMP accept) ---
         iifname "veth-fw-dmz" oifname "br-lan" log prefix "[FW-DMZ2LAN-DROP] " counter drop
+
+        # --- ICMP between allowed zones (after the explicit blocks above) ---
+        ip protocol icmp icmp type echo-request accept
+        ip protocol icmp icmp type echo-reply accept
 
         # Log and drop everything else
         log prefix "[FW-FORWARD-DROP] " counter drop
