@@ -4,9 +4,13 @@ else
     PYTHON := $(shell which python3)
 endif
 
-.PHONY: all setup test teardown clean report check
+.PHONY: all setup test teardown clean report check web
 
 all: setup test teardown
+
+web:
+	@echo "Starting web dashboard at http://localhost:8080 ..."
+	sudo $(PYTHON) web/server.py
 
 setup:
 	sudo bash setup.sh

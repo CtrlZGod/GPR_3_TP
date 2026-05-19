@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Firewall Test Dashboard</title>
+<style>
+:root {
+    --bg: #0d1117;
+    --bg-card: #161b22;
+    --bg-input: #21262d;
+    --fg: #e6edf3;
+    --fg-dim: #7d8590;
+    --accent: #58a6ff;
+    --success: #3fb950;
+    --fail: #f85149;
+    --warn: #d29922;
+    --border: #30363d;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, sans-serif;
+    background: var(--bg);
+    color: var(--fg);
+    min-height: 100vh;
+    padding: 20px;
+    font-size: 14px;
+}
+h1 { color: var(--accent); margin-bottom: 4px; font-size: 24px; }
+.subtitle { color: var(--fg-dim); margin-bottom: 20px; font-size: 13px; }
+.container { max-width: 1500px; margin: 0 auto; }
+
+.topology-bar {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+.status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--fg-dim);
+    box-shadow: 0 0 8px currentColor;
+}
+.status-dot.up { background: var(--success); color: var(--success); }
+.status-dot.down { background: var(--fail); color: var(--fail); }
+.status-text { font-weight: 500; }
+.bar-actions { margin-left: auto; display: flex; gap: 8px; flex-wrap: wrap; }
+
+button {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    padding: 7px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 13px;
+    transition: opacity 0.15s, transform 0.1s;
+}
+button:hover:not(:disabled) { opacity: 0.85; }
+button:active { transform: scale(0.97); }
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+button.secondary {
+    background: var(--bg-input);
+    color: var(--fg);
+    border: 1px solid var(--border);
+}
+button.danger { background: var(--fail); }
+button.success { background: var(--success); }
+
+.layout {
+    display: grid;
+    grid-template-columns: 420px 1fr;
+    gap: 20px;
+}
+@media (max-width: 1000px) { .layout { grid-template-columns: 1fr; } }
+
+.panel {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+.panel-header {
+    padding: 12px 16px;
+    background: var(--bg-input);
+    border-bottom: 1px solid var(--border);
+    font-weight: 600;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.panel-body { padding: 14px; max-height: 75vh; overflow-y: auto; }
+
+.test-file { margin-bottom: 10px; }
+.test-file-name {
+    font-weight: 600;
+    color: var(--accent);
+    cursor: pointer;
+    user-select: none;
+    padding: 4px 0;
+}
+.test-class { margin-left: 14px; }
+.test-class-name {
+    color: var(--warn);
+    font-size: 13px;
+    cursor: pointer;
+    user-select: none;
+    padding: 3px 0;
+    margin-top: 4px;
+}
+.test-item {
+    display: flex;
+    align-items: center;
+    padding: 3px 0 3px 28px;
+    font-size: 12.5px;
+    font-family: 'SF Mono', Consolas, Menlo, monospace;
+    gap: 6px;
+}
+.test-item input { cursor: pointer; }
+.test-item.passed .test-name { color: var(--success); }
+.test-item.failed .test-name { color: var(--fail); }
+.test-status {
+    margin-left: auto;
+    font-size: 10px;
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+.test-status.passed { background: var(--success); color: #fff; }
+.test-status.failed { background: var(--fail); color: #fff; }
+
+pre {
+    background: #010409;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px;
+    font-size: 12px;
+    line-height: 1.55;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-family: 'SF Mono', Consolas, Menlo, monospace;
+}
+
+.summary {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 14px;
+}
+.summary-card {
+    text-align: center;
+    padding: 12px 8px;
+    background: var(--bg-input);
+    border-radius: 6px;
+    border: 1px solid var(--border);
+}
+.summary-card .num { font-size: 22px; font-weight: 700; line-height: 1.2; }
+.summary-card .label {
+    font-size: 11px;
+    color: var(--fg-dim);
+    text-transform: uppercase;
+    margin-top: 2px;
+    letter-spacing: 0.5px;
+}
+.summary-card.passed .num { color: var(--success); }
+.summary-card.failed .num { color: var(--fail); }
+.summary-card.total .num { color: var(--accent); }
+.summary-card.duration .num { color: var(--warn); }
+
+.controls {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+}
+
+.spinner {
+    display: inline-block;
+    width: 11px;
+    height: 11px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    vertical-align: middle;
+    margin-right: 6px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.tabs {
+    display: flex;
+    gap: 0;
+    width: 100%;
+}
+.tab {
+    padding: 10px 16px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    color: var(--fg-dim);
+    font-weight: 500;
+    transition: color 0.1s;
+}
+.tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+.tab:hover:not(.active) { color: var(--fg); }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+.result-row {
+    padding: 6px 8px;
+    border-radius: 4px;
+    font-family: 'SF Mono', Consolas, Menlo, monospace;
+    font-size: 12.5px;
+    margin: 2px 0;
+}
+.result-row.passed { color: var(--success); }
+.result-row.failed { color: var(--fail); background: rgba(248, 81, 73, 0.08); }
+.result-row .icon { display: inline-block; width: 16px; }
+.failure-detail {
+    background: #010409;
+    border-left: 3px solid var(--fail);
+    padding: 10px 12px;
+    margin: 6px 0 14px 24px;
+    font-family: 'SF Mono', Consolas, Menlo, monospace;
+    font-size: 11.5px;
+    white-space: pre-wrap;
+    border-radius: 0 4px 4px 0;
+    color: var(--fg-dim);
+}
+
+.empty {
+    text-align: center;
+    color: var(--fg-dim);
+    padding: 40px 20px;
+    font-style: italic;
+}
+
+.toggle-arrow {
+    display: inline-block;
+    width: 12px;
+    transition: transform 0.15s;
+}
+.collapsed > .toggle-arrow { transform: rotate(-90deg); }
+.collapsed + div { display: none; }
+</style>
+</head>
+<body>
+<div class="container">
+    <h1>🔥 Firewall Test Dashboard</h1>
+    <div class="subtitle">nftables + Linux namespaces + pytest — projeto GPR</div>
+
+    <div class="topology-bar">
+        <div class="status-dot" id="statusDot"></div>
+        <div class="status-text" id="statusText">A verificar topologia...</div>
+        <div class="bar-actions">
+            <button onclick="setupTopology()" id="btnSetup" class="success">▶ Setup</button>
+            <button onclick="teardownTopology()" id="btnTeardown" class="danger">⏹ Teardown</button>
+            <button onclick="loadRules()" class="secondary">📋 Rules</button>
+            <button onclick="loadTests()" class="secondary">🔄 Refresh</button>
+        </div>
+    </div>
+
+    <div class="layout">
+        <div class="panel">
+            <div class="panel-header">
+                <span>Testes</span>
+                <span id="testCount" style="color: var(--fg-dim); font-size: 12px; font-weight: normal;"></span>
+            </div>
+            <div class="panel-body">
+                <div class="controls">
+                    <button onclick="selectAll(true)" class="secondary">✓ All</button>
+                    <button onclick="selectAll(false)" class="secondary">✗ None</button>
+                    <button onclick="runSelected()" id="btnRun">▶ Run Selected</button>
+                </div>
+                <div id="testList" class="empty">A carregar testes...</div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-header">
+                <div class="tabs">
+                    <div class="tab active" data-tab="results" onclick="showTab(this)">📊 Results</div>
+                    <div class="tab" data-tab="output" onclick="showTab(this)">📝 Output</div>
+                    <div class="tab" data-tab="rules" onclick="showTab(this)">🔧 Rules</div>
+                </div>
+            </div>
+            <div class="panel-body">
+                <div id="tab-results" class="tab-content active">
+                    <div class="summary" id="summary" style="display: none;">
+                        <div class="summary-card total">
+                            <div class="num" id="numTotal">0</div>
+                            <div class="label">Total</div>
+                        </div>
+                        <div class="summary-card passed">
+                            <div class="num" id="numPassed">0</div>
+                            <div class="label">Passed</div>
+                        </div>
+                        <div class="summary-card failed">
+                            <div class="num" id="numFailed">0</div>
+                            <div class="label">Failed</div>
+                        </div>
+                        <div class="summary-card duration">
+                            <div class="num" id="duration">—</div>
+                            <div class="label">Duration</div>
+                        </div>
+                    </div>
+                    <div id="resultDetails" class="empty">Nenhum teste corrido ainda.</div>
+                </div>
+                <div id="tab-output" class="tab-content">
+                    <pre id="output">Nenhum output ainda.</pre>
+                </div>
+                <div id="tab-rules" class="tab-content">
+                    <pre id="rules">Clica "Rules" para carregar.</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let testsData = {};
+let lastReport = null;
+
+async function api(method, path, body) {
+    const opts = { method };
+    if (body) {
+        opts.headers = { 'Content-Type': 'application/json' };
+        opts.body = JSON.stringify(body);
+    }
+    const r = await fetch(path, opts);
+    return r.json();
+}
+
+async function refreshStatus() {
+    try {
+        const d = await api('GET', '/api/status');
+        const dot = document.getElementById('statusDot');
+        const text = document.getElementById('statusText');
+        if (d.up) {
+            dot.className = 'status-dot up';
+            text.innerHTML = '<strong>Topologia UP</strong> · ' + d.namespaces.length + ' namespaces ativos';
+        } else if (d.namespaces.length > 0) {
+            dot.className = 'status-dot down';
+            text.innerHTML = '<strong>Topologia INCOMPLETA</strong> · ' + d.namespaces.join(', ');
+        } else {
+            dot.className = 'status-dot down';
+            text.innerHTML = '<strong>Topologia DOWN</strong>';
+        }
+    } catch (e) {
+        document.getElementById('statusText').textContent = 'Erro: ' + e.message;
+    }
+}
+
+async function setupTopology() {
+    const btn = document.getElementById('btnSetup');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span>A criar...';
+    try {
+        const r = await api('POST', '/api/setup');
+        document.getElementById('output').textContent = r.stdout + '\n' + (r.stderr || '');
+        showTabByName('output');
+        await refreshStatus();
+    } catch (e) {
+        alert('Setup falhou: ' + e.message);
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '▶ Setup';
+    }
+}
+
+async function teardownTopology() {
+    const btn = document.getElementById('btnTeardown');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span>A limpar...';
+    try {
+        const r = await api('POST', '/api/teardown');
+        document.getElementById('output').textContent = r.stdout + '\n' + (r.stderr || '');
+        showTabByName('output');
+        await refreshStatus();
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '⏹ Teardown';
+    }
+}
+
+async function loadTests() {
+    try {
+        testsData = await api('GET', '/api/tests');
+        renderTests();
+    } catch (e) {
+        document.getElementById('testList').innerHTML = '<div class="empty">Erro ao carregar testes: ' + e.message + '</div>';
+    }
+}
+
+function renderTests() {
+    const list = document.getElementById('testList');
+    if (Object.keys(testsData).length === 0) {
+        list.innerHTML = '<div class="empty">Sem testes encontrados.</div>';
+        return;
+    }
+    let html = '';
+    let total = 0;
+    for (const [file, classes] of Object.entries(testsData)) {
+        const fileShort = file.split('/').pop();
+        html += '<div class="test-file">';
+        html += '<div class="test-file-name" onclick="toggleNode(this)">';
+        html += '<span class="toggle-arrow">▼</span> ' + fileShort + '</div><div>';
+        for (const [cls, items] of Object.entries(classes)) {
+            html += '<div class="test-class">';
+            if (cls !== '_module') {
+                html += '<div class="test-class-name" onclick="toggleNode(this)">';
+                html += '<span class="toggle-arrow">▼</span> ' + cls + '</div><div>';
+            }
+            for (const t of items) {
+                const status = getTestStatus(t.id);
+                html += '<div class="test-item ' + status.klass + '">';
+                html += '<input type="checkbox" data-test-id="' + escapeAttr(t.id) + '">';
+                html += '<span class="test-name">' + t.name + '</span>';
+                if (status.label) {
+                    html += '<span class="test-status ' + status.klass + '">' + status.label + '</span>';
+                }
+                html += '</div>';
+                total++;
+            }
+            if (cls !== '_module') html += '</div>';
+            html += '</div>';
+        }
+        html += '</div></div>';
+    }
+    list.innerHTML = html;
+    document.getElementById('testCount').textContent = total + ' testes';
+}
+
+function getTestStatus(testId) {
+    if (!lastReport || !lastReport.tests) return { klass: '', label: '' };
+    const t = lastReport.tests.find(x => x.nodeid === testId);
+    if (!t) return { klass: '', label: '' };
+    if (t.outcome === 'passed') return { klass: 'passed', label: 'PASS' };
+    return { klass: 'failed', label: 'FAIL' };
+}
+
+function toggleNode(el) {
+    el.classList.toggle('collapsed');
+}
+
+function selectAll(value) {
+    document.querySelectorAll('#testList input[type="checkbox"]')
+        .forEach(cb => cb.checked = value);
+}
+
+async function runSelected() {
+    const selected = Array.from(
+        document.querySelectorAll('#testList input[type="checkbox"]:checked')
+    ).map(cb => cb.dataset.testId);
+
+    if (selected.length === 0) {
+        alert('Nenhum teste selecionado.');
+        return;
+    }
+
+    const btn = document.getElementById('btnRun');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span>A correr ' + selected.length + '...';
+
+    try {
+        const r = await api('POST', '/api/run', { tests: selected });
+        document.getElementById('output').textContent =
+            (r.stdout || '') + '\n\n' + (r.stderr || '');
+
+        if (r.report) {
+            lastReport = r.report;
+            updateSummary();
+            renderTests();
+        }
+        showTabByName('results');
+    } catch (e) {
+        alert('Erro: ' + e.message);
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '▶ Run Selected';
+    }
+}
+
+function updateSummary() {
+    if (!lastReport) return;
+    document.getElementById('summary').style.display = 'grid';
+    const s = lastReport.summary || {};
+    const total = s.total || ((s.passed || 0) + (s.failed || 0) + (s.error || 0));
+    document.getElementById('numTotal').textContent = total;
+    document.getElementById('numPassed').textContent = s.passed || 0;
+    document.getElementById('numFailed').textContent = (s.failed || 0) + (s.error || 0);
+    document.getElementById('duration').textContent =
+        ((lastReport.duration || 0).toFixed(1)) + 's';
+
+    const details = document.getElementById('resultDetails');
+    let html = '';
+    const failed = (lastReport.tests || []).filter(t => t.outcome !== 'passed');
+    const passed = (lastReport.tests || []).filter(t => t.outcome === 'passed');
+
+    if (failed.length > 0) {
+        html += '<h3 style="margin: 8px 0; color: var(--fail);">❌ Failed (' + failed.length + ')</h3>';
+        for (const t of failed) {
+            const name = t.nodeid.split('::').slice(1).join('::');
+            html += '<div class="result-row failed"><span class="icon">✗</span>' + escapeHtml(name) + '</div>';
+            const lr = (t.call && t.call.longrepr) || t.longrepr || '';
+            if (lr) html += '<div class="failure-detail">' + escapeHtml(lr) + '</div>';
+        }
+    }
+    if (passed.length > 0) {
+        html += '<h3 style="margin: 12px 0 8px; color: var(--success);">✅ Passed (' + passed.length + ')</h3>';
+        for (const t of passed) {
+            const name = t.nodeid.split('::').slice(1).join('::');
+            html += '<div class="result-row passed"><span class="icon">✓</span>' + escapeHtml(name) + '</div>';
+        }
+    }
+    details.innerHTML = html || '<div class="empty">Sem resultados.</div>';
+}
+
+async function loadRules() {
+    const data = await api('GET', '/api/rules');
+    document.getElementById('rules').textContent =
+        data.error || data.ruleset || 'Sem ruleset (topologia down?)';
+    showTabByName('rules');
+}
+
+function showTab(el) {
+    const name = el.dataset.tab;
+    showTabByName(name);
+}
+
+function showTabByName(name) {
+    document.querySelectorAll('.tab').forEach(t => {
+        t.classList.toggle('active', t.dataset.tab === name);
+    });
+    document.querySelectorAll('.tab-content').forEach(c => {
+        c.classList.toggle('active', c.id === 'tab-' + name);
+    });
+}
+
+function escapeHtml(s) {
+    const div = document.createElement('div');
+    div.textContent = String(s);
+    return div.innerHTML;
+}
+function escapeAttr(s) {
+    return String(s).replace(/"/g, '&quot;');
+}
+
+refreshStatus();
+loadTests();
+setInterval(refreshStatus, 5000);
+</script>
+</body>
+</html>
