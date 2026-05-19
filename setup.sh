@@ -3,11 +3,15 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+# Clean up any previous topology first
+echo "=== Cleaning previous topology (if any) ==="
+bash "$SCRIPT_DIR/teardown.sh" 2>/dev/null || true
+
 echo "=== Creating network topology ==="
 
 # Create namespaces
 for ns in ns-wan ns-lan ns-lan2 ns-dmz ns-fw; do
-    ip netns add "$ns" 2>/dev/null || true
+    ip netns add "$ns"
     echo "  [+] Namespace $ns"
 done
 
