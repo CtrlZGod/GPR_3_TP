@@ -129,6 +129,9 @@ button.success { background: var(--success); }
 .test-item input { cursor: pointer; }
 .test-item.passed .test-name { color: var(--success); }
 .test-item.failed .test-name { color: var(--fail); }
+.test-item.skipped .test-name { color: var(--warn); }
+.test-item.running .test-name { color: var(--accent); }
+.test-item.running { background: rgba(88, 166, 255, 0.08); }
 .test-status {
     margin-left: auto;
     font-size: 10px;
@@ -139,6 +142,43 @@ button.success { background: var(--success); }
 }
 .test-status.passed { background: var(--success); color: #fff; }
 .test-status.failed { background: var(--fail); color: #fff; }
+.test-status.skipped { background: var(--warn); color: #fff; }
+.test-status.running { background: var(--accent); color: #fff; }
+
+.progress-wrap {
+    margin: 10px 0 14px;
+    padding: 10px;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+}
+.progress-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    margin-bottom: 6px;
+}
+.progress-label { color: var(--fg-dim); }
+.progress-value { font-weight: 600; }
+.progress-value .pass { color: var(--success); }
+.progress-value .fail { color: var(--fail); }
+.progress-track {
+    background: #010409;
+    height: 8px;
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+}
+.progress-bar {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--accent), var(--success));
+    transition: width 0.25s ease;
+}
+.progress-bar.has-fail {
+    background: linear-gradient(90deg, var(--accent), var(--fail));
+}
 
 pre {
     background: #010409;
@@ -284,6 +324,19 @@ pre {
                     <button onclick="selectAll(true)" class="secondary">✓ All</button>
                     <button onclick="selectAll(false)" class="secondary">✗ None</button>
                     <button onclick="runSelected()" id="btnRun">▶ Run Selected</button>
+                </div>
+                <div id="progressWrap" class="progress-wrap" style="display: none;">
+                    <div class="progress-row">
+                        <span class="progress-label" id="progressLabel">A correr…</span>
+                        <span class="progress-value">
+                            <span class="pass" id="progressPass">0</span> /
+                            <span class="fail" id="progressFail">0</span> /
+                            <span id="progressTotal">0</span>
+                        </span>
+                    </div>
+                    <div class="progress-track">
+                        <div class="progress-bar" id="progressBar"></div>
+                    </div>
                 </div>
                 <div id="testList" class="empty">A carregar testes...</div>
             </div>
@@ -484,25 +537,157 @@ async function runSelected() {
 
     const btn = document.getElementById('btnRun');
     btn.disabled = true;
-    btn.innerHTML = '<span class="spinner"></span>A correr ' + selected.length + '...';
+    btn.innerHTML = '<span class="spinner"></span>A iniciar...';
+
+    // Clear previous run state
+    lastReport = null;
+    clearTestBadges();
+    document.getElementById('output').textContent = '';
+    document.getElementById('resultDetails').innerHTML =
+        '<div class="empty">Tests are running... results stream below.</div>';
+    document.getElementById('summary').style.display = 'none';
+
+    // Mark selected tests as "running" upfront
+    for (const id of selected) markTestRunning(id);
+
+    initProgress(selected.length);
+
+    let passCount = 0;
+    let failCount = 0;
 
     try {
-        const r = await api('POST', '/api/run', { tests: selected });
-        document.getElementById('output').textContent =
-            (r.stdout || '') + '\n\n' + (r.stderr || '');
+        const resp = await fetch('/api/run-stream', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ tests: selected }),
+        });
 
-        if (r.report) {
-            lastReport = r.report;
-            updateSummary();
-            renderTests();
+        if (!resp.ok || !resp.body) {
+            throw new Error('Stream not available (HTTP ' + resp.status + ')');
         }
-        showTabByName('results');
+
+        const reader = resp.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            buffer += decoder.decode(value, { stream: true });
+
+            const events = buffer.split('\n\n');
+            buffer = events.pop();
+
+            for (const ev of events) {
+                if (!ev.startsWith('data: ')) continue;
+                let data;
+                try { data = JSON.parse(ev.substring(6)); }
+                catch (_) { continue; }
+
+                if (data.type === 'start') {
+                    btn.innerHTML = '<span class="spinner"></span>0 / ' + data.total;
+                } else if (data.type === 'result') {
+                    if (data.outcome === 'passed') passCount++;
+                    else if (data.outcome === 'skipped') {}
+                    else failCount++;
+
+                    updateProgress(data.completed, data.total, passCount, failCount);
+                    updateTestBadge(data.test_id, data.outcome);
+                    btn.innerHTML = '<span class="spinner"></span>' +
+                        data.completed + ' / ' + data.total;
+
+                    appendOutput(data.test_id + ' ' + data.outcome.toUpperCase());
+                } else if (data.type === 'output') {
+                    if (data.line && data.line.trim()) appendOutput(data.line);
+                } else if (data.type === 'done') {
+                    if (data.report) {
+                        lastReport = data.report;
+                        updateSummary();
+                        renderTests();
+                    }
+                    showTabByName('results');
+                }
+            }
+        }
     } catch (e) {
         alert('Erro: ' + e.message);
     } finally {
         btn.disabled = false;
         btn.innerHTML = '▶ Run Selected';
+        document.getElementById('progressLabel').textContent = 'Concluído';
     }
+}
+
+function initProgress(total) {
+    document.getElementById('progressWrap').style.display = 'block';
+    document.getElementById('progressBar').style.width = '0%';
+    document.getElementById('progressBar').classList.remove('has-fail');
+    document.getElementById('progressLabel').textContent = 'A correr…';
+    document.getElementById('progressPass').textContent = '0';
+    document.getElementById('progressFail').textContent = '0';
+    document.getElementById('progressTotal').textContent = total;
+}
+
+function updateProgress(completed, total, passed, failed) {
+    const pct = total > 0 ? (completed / total * 100) : 0;
+    const bar = document.getElementById('progressBar');
+    bar.style.width = pct + '%';
+    if (failed > 0) bar.classList.add('has-fail');
+    document.getElementById('progressPass').textContent = passed;
+    document.getElementById('progressFail').textContent = failed;
+}
+
+function clearTestBadges() {
+    document.querySelectorAll('#testList .test-item').forEach(item => {
+        item.classList.remove('passed', 'failed', 'skipped', 'running');
+        const badge = item.querySelector('.test-status');
+        if (badge) badge.remove();
+    });
+}
+
+function markTestRunning(testId) {
+    const cb = document.querySelector(
+        '#testList input[data-test-id="' + cssEscape(testId) + '"]'
+    );
+    if (!cb) return;
+    const item = cb.closest('.test-item');
+    if (!item) return;
+    item.classList.add('running');
+    const badge = item.querySelector('.test-status') || document.createElement('span');
+    badge.className = 'test-status running';
+    badge.textContent = '…';
+    if (!badge.parentElement) item.appendChild(badge);
+}
+
+function updateTestBadge(testId, outcome) {
+    const cb = document.querySelector(
+        '#testList input[data-test-id="' + cssEscape(testId) + '"]'
+    );
+    if (!cb) return;
+    const item = cb.closest('.test-item');
+    if (!item) return;
+    item.classList.remove('passed', 'failed', 'skipped', 'running');
+    const klass = outcome === 'passed' ? 'passed'
+                : outcome === 'skipped' ? 'skipped' : 'failed';
+    item.classList.add(klass);
+    let badge = item.querySelector('.test-status');
+    if (!badge) {
+        badge = document.createElement('span');
+        item.appendChild(badge);
+    }
+    badge.className = 'test-status ' + klass;
+    badge.textContent = outcome.toUpperCase();
+}
+
+function appendOutput(line) {
+    const out = document.getElementById('output');
+    out.textContent += line + '\n';
+    out.scrollTop = out.scrollHeight;
+}
+
+function cssEscape(s) {
+    if (window.CSS && CSS.escape) return CSS.escape(s);
+    return String(s).replace(/[^\w-]/g, '\\$&');
 }
 
 function updateSummary() {

@@ -2,10 +2,11 @@
 """Firewall Test Dashboard — HTTP API + UI for running tests in the browser."""
 
 import os
+import re
 import sys
 import json
 import subprocess
-from flask import Flask, jsonify, request, send_from_directory
+from flask import Flask, Response, jsonify, request, send_from_directory, stream_with_context
 
 # Use the SAME interpreter the server is running with — otherwise sudo
 # falls back to /usr/bin/python3 which doesn't have pytest installed.
@@ -141,6 +142,92 @@ def run_tests():
         "returncode": result.returncode,
         "report": report,
     })
+
+
+_RESULT_RE = re.compile(
+    r'^(tests/\S+(?:::\S+)+)\s+(PASSED|FAILED|SKIPPED|ERROR|XPASS|XFAIL)\b'
+)
+
+
+def _sse(payload):
+    return f"data: {json.dumps(payload)}\n\n"
+
+
+@app.route("/api/run-stream", methods=["POST"])
+def run_tests_stream():
+    """Run tests and stream progress as Server-Sent Events.
+    Each test result is emitted as it happens, plus a final 'done' event
+    with the full JSON report."""
+    data = request.get_json() or {}
+    test_ids = data.get("tests", [])
+    if not test_ids:
+        return jsonify({"error": "No tests selected"}), 400
+
+    def generate():
+        if os.path.exists(JSON_REPORT):
+            os.remove(JSON_REPORT)
+
+        cmd = [
+            PY, "-u", "-m", "pytest", "-v", "--tb=short", "--color=no",
+            "--no-header",
+            "--json-report", f"--json-report-file={JSON_REPORT}",
+        ] + test_ids
+
+        env = os.environ.copy()
+        env["PYTHONUNBUFFERED"] = "1"
+
+        proc = subprocess.Popen(
+            cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+            cwd=PROJECT_DIR, bufsize=1, text=True, env=env,
+        )
+
+        total = len(test_ids)
+        completed = 0
+
+        yield _sse({"type": "start", "total": total})
+
+        try:
+            for line in proc.stdout:
+                line = line.rstrip("\n")
+                m = _RESULT_RE.match(line)
+                if m:
+                    test_id = m.group(1)
+                    outcome = m.group(2).lower()
+                    completed += 1
+                    yield _sse({
+                        "type": "result",
+                        "test_id": test_id,
+                        "outcome": outcome,
+                        "completed": completed,
+                        "total": total,
+                    })
+                else:
+                    yield _sse({"type": "output", "line": line})
+        finally:
+            proc.wait()
+
+        report = None
+        if os.path.exists(JSON_REPORT):
+            try:
+                with open(JSON_REPORT) as f:
+                    report = json.load(f)
+            except Exception as e:
+                report = {"error": str(e)}
+
+        yield _sse({
+            "type": "done",
+            "returncode": proc.returncode,
+            "report": report,
+        })
+
+    response = Response(
+        stream_with_context(generate()),
+        mimetype="text/event-stream",
+    )
+    response.headers["Cache-Control"] = "no-cache"
+    response.headers["X-Accel-Buffering"] = "no"
+    response.headers["Connection"] = "keep-alive"
+    return response
 
 
 @app.route("/api/rules")
