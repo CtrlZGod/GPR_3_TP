@@ -1,4 +1,4 @@
-# Projeto 18 — Firewall por Regras + Testes Automatizados
+# Tema 18 — Firewall por Regras + Testes Automatizados
 
 Firewall baseado em **nftables** com topologia de rede simulada usando **Linux network namespaces** e suite de testes automatizados em **Python (pytest)**.
 
