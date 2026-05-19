@@ -34,7 +34,7 @@ fi
 
 # # 5. Wait for Flask to initialize
 # echo "Waiting 5 seconds for Flask to warm up..."
-# sleep 5
+sleep 5
 
 # 6. Launch ngrok (Keep this in the foreground)
 source venv/bin/activate
