@@ -407,6 +407,17 @@ async function loadTests() {
 
 function renderTests() {
     const list = document.getElementById('testList');
+    if (testsData._error) {
+        const e = testsData._error;
+        list.innerHTML =
+            '<div style="color: var(--fail);"><strong>Test collection failed</strong></div>' +
+            '<div style="color: var(--fg-dim); font-size: 12px; margin-top: 4px;">' +
+            'Python: <code>' + escapeHtml(e.python || '?') + '</code><br>' +
+            'Return code: ' + e.returncode + '</div>' +
+            '<pre style="margin-top: 10px; font-size: 11px;">' +
+            escapeHtml((e.stderr || '') + '\n' + (e.stdout || '')) + '</pre>';
+        return;
+    }
     if (Object.keys(testsData).length === 0) {
         list.innerHTML = '<div class="empty">Sem testes encontrados.</div>';
         return;

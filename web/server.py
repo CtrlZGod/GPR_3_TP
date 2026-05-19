@@ -2,9 +2,14 @@
 """Firewall Test Dashboard — HTTP API + UI for running tests in the browser."""
 
 import os
+import sys
 import json
 import subprocess
 from flask import Flask, jsonify, request, send_from_directory
+
+# Use the SAME interpreter the server is running with — otherwise sudo
+# falls back to /usr/bin/python3 which doesn't have pytest installed.
+PY = sys.executable
 
 WEB_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_DIR = os.path.dirname(WEB_DIR)
@@ -67,8 +72,7 @@ def teardown():
 @app.route("/api/tests")
 def list_tests():
     result = subprocess.run(
-        ["python3", "-m", "pytest", "tests/", "--collect-only", "-q",
-         "--no-header"],
+        [PY, "-m", "pytest", "tests/", "--collect-only", "-q", "--no-header"],
         capture_output=True, text=True, cwd=PROJECT_DIR,
     )
     organized = {}
@@ -85,6 +89,20 @@ def list_tests():
         organized.setdefault(file_, {}).setdefault(cls, []).append({
             "name": test_name, "id": line,
         })
+
+    # If collection failed (nothing parsed), expose the error so the UI
+    # can show what went wrong instead of just "no tests found".
+    if not organized:
+        return jsonify({
+            "_error": {
+                "message": "Test collection failed",
+                "returncode": result.returncode,
+                "stdout": result.stdout,
+                "stderr": result.stderr,
+                "python": PY,
+            }
+        })
+
     return jsonify(organized)
 
 
@@ -99,7 +117,7 @@ def run_tests():
         os.remove(JSON_REPORT)
 
     cmd = [
-        "python3", "-m", "pytest", "-v", "--tb=short",
+        PY, "-m", "pytest", "-v", "--tb=short",
         "--json-report", f"--json-report-file={JSON_REPORT}",
         "--no-header",
     ] + test_ids
