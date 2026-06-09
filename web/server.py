@@ -72,10 +72,34 @@ def teardown():
 
 @app.route("/api/tests")
 def list_tests():
+    """Collect tests and extract docstrings for human-readable descriptions."""
+    collect_report = "/tmp/firewall-test-collect.json"
+    if os.path.exists(collect_report):
+        os.remove(collect_report)
+
     result = subprocess.run(
-        [PY, "-m", "pytest", "tests/", "--collect-only", "-q", "--no-header"],
+        [PY, "-m", "pytest", "tests/", "--collect-only", "-q",
+         "--no-header",
+         "--json-report", f"--json-report-file={collect_report}"],
         capture_output=True, text=True, cwd=PROJECT_DIR,
     )
+
+    # Build a nodeid → docstring map from the JSON report
+    docstrings = {}
+    if os.path.exists(collect_report):
+        try:
+            with open(collect_report) as f:
+                report = json.load(f)
+            for item in report.get("collectors", []):
+                for child in item.get("result", []):
+                    nid = child.get("nodeid", "")
+                    doc = child.get("doc", "")
+                    if nid and doc:
+                        docstrings[nid] = doc.strip().split("\n")[0]
+        except Exception:
+            pass
+
+    # Parse the plain-text output to get the test tree structure
     organized = {}
     for line in result.stdout.splitlines():
         line = line.strip()
@@ -87,12 +111,12 @@ def list_tests():
             cls, test_name = parts[1], parts[2]
         else:
             cls, test_name = "_module", parts[1]
+
+        desc = docstrings.get(line, "")
         organized.setdefault(file_, {}).setdefault(cls, []).append({
-            "name": test_name, "id": line,
+            "name": test_name, "id": line, "desc": desc,
         })
 
-    # If collection failed (nothing parsed), expose the error so the UI
-    # can show what went wrong instead of just "no tests found".
     if not organized:
         return jsonify({
             "_error": {
