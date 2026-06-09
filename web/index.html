@@ -129,6 +129,21 @@ pre { background: #010409; border: 1px solid var(--border); border-radius: 6px; 
 .topo-link { transition: stroke 0.4s, opacity 0.3s, stroke-width 0.3s; }
 .topo-badge { font-size: 9px; font-weight: 700; }
 
+/* Packet Flow */
+.pf-scenarios { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+.pf-btn { padding: 6px 12px; border-radius: 16px; font-size: 11px; background: var(--bg-input); color: var(--fg-dim); border: 1px solid var(--border); cursor: pointer; transition: all 0.15s; }
+.pf-btn:hover { color: var(--fg); border-color: var(--fg-dim); }
+.pf-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.pf-btn.blocked { border-color: var(--fail); }
+.pf-btn.blocked.active { background: var(--fail); }
+.pf-log { margin-top: 12px; background: #010409; border: 1px solid var(--border); border-radius: 6px; padding: 10px 12px; font-family: 'SF Mono', Consolas, monospace; font-size: 11px; line-height: 1.8; max-height: 200px; overflow-y: auto; }
+.pf-log .step { opacity: 0; animation: fadeStep 0.3s forwards; }
+.pf-log .step.allow { color: var(--success); }
+.pf-log .step.deny { color: var(--fail); }
+.pf-log .step.info { color: var(--fg-dim); }
+.pf-log .step.nat { color: var(--warn); }
+@keyframes fadeStep { to { opacity: 1; } }
+
 /* Benchmark */
 .bench-row { display: flex; align-items: center; gap: 10px; margin: 6px 0; font-size: 12px; }
 .bench-label { width: 160px; flex-shrink: 0; font-weight: 500; }
@@ -193,6 +208,7 @@ pre { background: #010409; border: 1px solid var(--border); border-radius: 6px; 
                 <div class="tabs">
                     <div class="tab active" data-tab="results" onclick="showTab(this)">Results</div>
                     <div class="tab" data-tab="topology" onclick="showTab(this)">Topology</div>
+                    <div class="tab" data-tab="packetflow" onclick="showTab(this)">Packet Flow</div>
                     <div class="tab" data-tab="benchmark" onclick="showTab(this)">Benchmark</div>
                     <div class="tab" data-tab="output" onclick="showTab(this)">Output</div>
                     <div class="tab" data-tab="rules" onclick="showTab(this)">Rules</div>
@@ -270,6 +286,57 @@ pre { background: #010409; border: 1px solid var(--border); border-radius: 6px; 
                     <div id="topoLegend" style="margin-top:12px; font-size:11px; color:var(--fg-dim); text-align:center;">
                         Corre os testes para ver os resultados no diagrama.
                     </div>
+                </div>
+
+                <!-- TAB: Packet Flow -->
+                <div id="tab-packetflow" class="tab-content">
+                    <div style="font-weight:600; margin-bottom:4px;">Simular percurso de um pacote</div>
+                    <div style="font-size:11px; color:var(--fg-dim); margin-bottom:10px;">Escolhe um cenario para ver o pacote a atravessar a topologia, passo a passo.</div>
+                    <div class="pf-scenarios" id="pfScenarios"></div>
+
+                    <svg id="pfSvg" viewBox="0 0 700 360" style="width:100%; max-width:700px; margin:0 auto; display:block;">
+                        <!-- Zones -->
+                        <rect x="30" y="120" width="130" height="80" rx="10" fill="#1a1e2e" stroke="#f85149" stroke-width="2"/>
+                        <text x="95" y="155" text-anchor="middle" fill="#f85149" font-weight="700" font-size="13">WAN</text>
+                        <text x="95" y="175" text-anchor="middle" fill="#7d8590" font-size="10">10.0.1.10</text>
+
+                        <rect x="260" y="60" width="180" height="100" rx="12" fill="#1a2618" stroke="#3fb950" stroke-width="2.5"/>
+                        <text x="350" y="95" text-anchor="middle" fill="#3fb950" font-weight="700" font-size="14">FIREWALL</text>
+                        <text x="350" y="115" text-anchor="middle" fill="#7d8590" font-size="10">nftables</text>
+                        <text x="350" y="135" text-anchor="middle" fill="#3fb95060" font-size="9" id="pfFwRule"></text>
+
+                        <rect x="540" y="120" width="130" height="80" rx="10" fill="#1a1e2e" stroke="#d29922" stroke-width="2"/>
+                        <text x="605" y="155" text-anchor="middle" fill="#d29922" font-weight="700" font-size="13">DMZ</text>
+                        <text x="605" y="175" text-anchor="middle" fill="#7d8590" font-size="10">10.0.3.10</text>
+
+                        <rect x="260" y="250" width="180" height="80" rx="10" fill="#1a1e2e" stroke="#58a6ff" stroke-width="2"/>
+                        <text x="350" y="285" text-anchor="middle" fill="#58a6ff" font-weight="700" font-size="13">LAN</text>
+                        <text x="350" y="305" text-anchor="middle" fill="#7d8590" font-size="10">10.0.2.10</text>
+
+                        <!-- Paths (hidden, used for animation) -->
+                        <path id="pf-path-wan-fw"  d="M160,160 L260,110" fill="none" stroke="none"/>
+                        <path id="pf-path-fw-dmz"  d="M440,110 L540,160" fill="none" stroke="none"/>
+                        <path id="pf-path-fw-lan"  d="M350,160 L350,250" fill="none" stroke="none"/>
+                        <path id="pf-path-lan-fw"  d="M350,250 L350,160" fill="none" stroke="none"/>
+                        <path id="pf-path-fw-wan"  d="M260,110 L160,160" fill="none" stroke="none"/>
+                        <path id="pf-path-dmz-fw"  d="M540,160 L440,110" fill="none" stroke="none"/>
+
+                        <!-- Animated trail line -->
+                        <line id="pfTrail" x1="0" y1="0" x2="0" y2="0" stroke="none" stroke-width="2" opacity="0.4" stroke-dasharray="4,4"/>
+
+                        <!-- The packet dot -->
+                        <circle id="pfDot" cx="-20" cy="-20" r="8" fill="var(--accent)" opacity="0">
+                            <animate id="pfPulse" attributeName="r" values="8;11;8" dur="0.6s" repeatCount="indefinite"/>
+                        </circle>
+
+                        <!-- Result icon -->
+                        <g id="pfResult" opacity="0">
+                            <circle id="pfResultBg" cx="350" cy="30" r="16" fill="#3fb950"/>
+                            <text id="pfResultIcon" x="350" y="36" text-anchor="middle" fill="#fff" font-size="18" font-weight="700">&#10003;</text>
+                        </g>
+                    </svg>
+
+                    <div class="pf-log" id="pfLog" style="display:none;"></div>
                 </div>
 
                 <!-- TAB: Benchmark -->
@@ -568,6 +635,198 @@ function updateTopology() {
         '<span style="color:var(--fg-dim);">&#9608; Sem dados</span>';
 }
 
+/* ============ PACKET FLOW ============ */
+const PF_SCENARIOS = [
+    {
+        id: 'wan-dmz-http', label: 'WAN → DMZ HTTP', blocked: false,
+        desc: 'Host externo acede ao servidor web na DMZ via DNAT',
+        steps: [
+            { path: 'wan-fw', color: '#f85149', text: 'SYN TCP:80 src=10.0.1.10 dst=10.0.1.1', type: 'info' },
+            { at: 'fw', text: 'PREROUTING: DNAT → 10.0.3.10:80', type: 'nat' },
+            { at: 'fw', text: 'FORWARD: ct state NEW, tcp dport 80 ∈ @allowed_tcp_dmz → ACCEPT', type: 'allow' },
+            { path: 'fw-dmz', color: '#3fb950', text: 'SYN TCP:80 src=10.0.1.10 dst=10.0.3.10 (DNATed)', type: 'info' },
+            { at: 'dmz', text: 'Servidor recebe pedido HTTP → 200 OK', type: 'allow' },
+        ],
+    },
+    {
+        id: 'wan-lan-blocked', label: 'WAN → LAN', blocked: true,
+        desc: 'Host externo tenta aceder a rede interna — BLOQUEADO',
+        steps: [
+            { path: 'wan-fw', color: '#f85149', text: 'SYN TCP:80 src=10.0.1.10 dst=10.0.2.10', type: 'info' },
+            { at: 'fw', text: 'FORWARD: iifname "veth-fw-wan" oifname "br-lan"', type: 'info' },
+            { at: 'fw', text: 'MATCH → log "[FW-WAN2LAN-DROP]" counter DROP', type: 'deny' },
+            { at: 'fw', text: 'Pacote descartado. Counter incrementa.', type: 'deny' },
+        ],
+    },
+    {
+        id: 'lan-wan-http', label: 'LAN → WAN HTTP', blocked: false,
+        desc: 'Utilizador interno navega na web, trafego mascarado',
+        steps: [
+            { path: 'lan-fw', color: '#58a6ff', text: 'SYN TCP:80 src=10.0.2.10 dst=10.0.1.10', type: 'info' },
+            { at: 'fw', text: 'FORWARD: br-lan → veth-fw-wan, tcp dport 80 → ACCEPT', type: 'allow' },
+            { at: 'fw', text: 'POSTROUTING: MASQUERADE → src reescrito para 10.0.1.1', type: 'nat' },
+            { path: 'fw-wan', color: '#3fb950', text: 'SYN TCP:80 src=10.0.1.1 dst=10.0.1.10', type: 'info' },
+            { at: 'wan', text: 'Host externo ve origem 10.0.1.1, IP interno escondido', type: 'allow' },
+        ],
+    },
+    {
+        id: 'lan-dmz-ssh', label: 'LAN → DMZ SSH', blocked: false,
+        desc: 'Admin da LAN liga-se por SSH ao servidor DMZ',
+        steps: [
+            { path: 'lan-fw', color: '#58a6ff', text: 'SYN TCP:22 src=10.0.2.10 dst=10.0.3.10', type: 'info' },
+            { at: 'fw', text: 'FORWARD: br-lan → veth-fw-dmz, tcp dport 22 → ACCEPT', type: 'allow' },
+            { path: 'fw-dmz', color: '#3fb950', text: 'SYN TCP:22 src=10.0.2.10 dst=10.0.3.10', type: 'info' },
+            { at: 'dmz', text: 'SSH server aceita conexao → shell aberta', type: 'allow' },
+        ],
+    },
+    {
+        id: 'dmz-lan-blocked', label: 'DMZ → LAN', blocked: true,
+        desc: 'DMZ comprometida tenta pivotar para a LAN — BLOQUEADO',
+        steps: [
+            { path: 'dmz-fw', color: '#d29922', text: 'SYN TCP:445 src=10.0.3.10 dst=10.0.2.10 (lateral movement)', type: 'info' },
+            { at: 'fw', text: 'FORWARD: iifname "veth-fw-dmz" oifname "br-lan"', type: 'info' },
+            { at: 'fw', text: 'MATCH → log "[FW-DMZ2LAN-DROP]" counter DROP', type: 'deny' },
+            { at: 'fw', text: 'Isolamento DMZ garante que atacante nao chega a LAN', type: 'deny' },
+        ],
+    },
+    {
+        id: 'dmz-wan-update', label: 'DMZ → WAN', blocked: false,
+        desc: 'Servidor DMZ faz apt update (HTTP para o exterior)',
+        steps: [
+            { path: 'dmz-fw', color: '#d29922', text: 'SYN TCP:80 src=10.0.3.10 dst=93.184.216.34', type: 'info' },
+            { at: 'fw', text: 'FORWARD: veth-fw-dmz → veth-fw-wan, tcp dport 80 → ACCEPT', type: 'allow' },
+            { at: 'fw', text: 'POSTROUTING: MASQUERADE → src=10.0.1.1', type: 'nat' },
+            { path: 'fw-wan', color: '#3fb950', text: 'Pacote sai mascarado para a internet', type: 'info' },
+            { at: 'wan', text: 'Repositorio responde → update instalado', type: 'allow' },
+        ],
+    },
+    {
+        id: 'icmp-flood', label: 'ICMP Flood → FW', blocked: true,
+        desc: 'Flood de ping ao firewall — rate limited a 5/s',
+        steps: [
+            { path: 'wan-fw', color: '#f85149', text: 'ICMP echo-request #1 src=10.0.1.10 dst=10.0.1.1', type: 'info' },
+            { at: 'fw', text: 'INPUT: icmp echo-request, limit rate over 5/s → dentro do limite', type: 'allow' },
+            { at: 'fw', text: 'echo-request #2..#5 → ACCEPT (dentro do limite)', type: 'allow' },
+            { at: 'fw', text: 'echo-request #6+ → limit rate OVER 5/second → DROP', type: 'deny' },
+            { at: 'fw', text: 'Pings excedentes descartados. Firewall protegida.', type: 'deny' },
+        ],
+    },
+];
+
+const PF_COORDS = {
+    'wan':  { x: 95,  y: 160 },
+    'fw':   { x: 350, y: 110 },
+    'dmz':  { x: 605, y: 160 },
+    'lan':  { x: 350, y: 290 },
+};
+const PF_PATHS = {
+    'wan-fw':  [PF_COORDS.wan, PF_COORDS.fw],
+    'fw-dmz':  [PF_COORDS.fw,  PF_COORDS.dmz],
+    'fw-wan':  [PF_COORDS.fw,  PF_COORDS.wan],
+    'fw-lan':  [PF_COORDS.fw,  PF_COORDS.lan],
+    'lan-fw':  [PF_COORDS.lan, PF_COORDS.fw],
+    'dmz-fw':  [PF_COORDS.dmz, PF_COORDS.fw],
+};
+
+let pfAnim = null;
+
+function initPacketFlow() {
+    const el = document.getElementById('pfScenarios');
+    el.innerHTML = PF_SCENARIOS.map(s =>
+        '<button class="pf-btn' + (s.blocked ? ' blocked' : '') + '" onclick="runPacketFlow(\'' + s.id + '\')">' +
+        escapeHtml(s.label) + (s.blocked ? ' &#10007;' : ' &#10003;') + '</button>'
+    ).join('');
+}
+
+async function runPacketFlow(id) {
+    const sc = PF_SCENARIOS.find(s => s.id === id);
+    if (!sc) return;
+    if (pfAnim) { clearTimeout(pfAnim); pfAnim = null; }
+
+    // Highlight active button
+    document.querySelectorAll('.pf-btn').forEach(b => b.classList.remove('active'));
+    const btns = document.querySelectorAll('.pf-btn');
+    for (const b of btns) { if (b.textContent.includes(sc.label)) b.classList.add('active'); }
+
+    const dot = document.getElementById('pfDot');
+    const trail = document.getElementById('pfTrail');
+    const result = document.getElementById('pfResult');
+    const resultBg = document.getElementById('pfResultBg');
+    const resultIcon = document.getElementById('pfResultIcon');
+    const fwRule = document.getElementById('pfFwRule');
+    const log = document.getElementById('pfLog');
+
+    // Reset
+    dot.setAttribute('opacity', '0');
+    trail.setAttribute('stroke', 'none');
+    result.setAttribute('opacity', '0');
+    fwRule.textContent = '';
+    log.style.display = 'block';
+    log.innerHTML = '<div class="step info" style="animation-delay:0s;">&#9654; ' + escapeHtml(sc.desc) + '</div>';
+
+    let stepIdx = 0;
+    for (const step of sc.steps) {
+        await sleep(600);
+        stepIdx++;
+        const delay = stepIdx * 0.05;
+
+        if (step.path) {
+            // Animate dot along path
+            const pts = PF_PATHS[step.path];
+            if (pts) {
+                const [from, to] = pts;
+                dot.setAttribute('fill', step.color || 'var(--accent)');
+                dot.setAttribute('opacity', '1');
+                trail.setAttribute('x1', from.x);
+                trail.setAttribute('y1', from.y);
+                trail.setAttribute('x2', to.x);
+                trail.setAttribute('y2', to.y);
+                trail.setAttribute('stroke', step.color || 'var(--accent)');
+                await animateDot(dot, from, to, 500);
+            }
+        }
+
+        if (step.at === 'fw') {
+            fwRule.textContent = step.text.substring(0, 60);
+        }
+
+        log.innerHTML += '<div class="step ' + step.type + '" style="animation-delay:' + delay + 's;">' +
+            (step.type === 'allow' ? '&#10003; ' : step.type === 'deny' ? '&#10007; ' : step.type === 'nat' ? '&#8644; ' : '&gt; ') +
+            escapeHtml(step.text) + '</div>';
+        log.scrollTop = log.scrollHeight;
+    }
+
+    // Final result
+    await sleep(400);
+    if (sc.blocked) {
+        resultBg.setAttribute('fill', '#f85149');
+        resultIcon.textContent = '✗';
+        dot.setAttribute('fill', '#f85149');
+    } else {
+        resultBg.setAttribute('fill', '#3fb950');
+        resultIcon.textContent = '✓';
+        dot.setAttribute('fill', '#3fb950');
+    }
+    result.setAttribute('opacity', '1');
+}
+
+function animateDot(dot, from, to, duration) {
+    return new Promise(resolve => {
+        const start = performance.now();
+        function tick(now) {
+            const t = Math.min((now - start) / duration, 1);
+            const ease = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+            dot.setAttribute('cx', from.x + (to.x - from.x) * ease);
+            dot.setAttribute('cy', from.y + (to.y - from.y) * ease);
+            if (t < 1) requestAnimationFrame(tick);
+            else resolve();
+        }
+        requestAnimationFrame(tick);
+    });
+}
+
+function sleep(ms) { return new Promise(r => { pfAnim = setTimeout(r, ms); }); }
+
 /* ============ BENCHMARK ============ */
 async function runBenchmark() {
     const btn = document.getElementById('btnBench');
@@ -744,6 +1003,7 @@ function escapeAttr(s) { return String(s).replace(/"/g, '&quot;'); }
 /* ============ INIT ============ */
 refreshStatus();
 loadTests();
+initPacketFlow();
 setInterval(refreshStatus, 5000);
 </script>
 </body>
