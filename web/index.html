@@ -630,34 +630,79 @@ function buildHistogram(values, numBins) {
 }
 
 /* ============ EXPORT PDF ============ */
-async function exportPdf() {
-    const btn = document.getElementById('btnPdf');
-    btn.disabled = true; btn.textContent = 'A gerar...';
-    try {
-        const resp = await fetch('/api/export-pdf', {
-            headers: {
-                'Accept': 'application/pdf',
-                'ngrok-skip-browser-warning': 'true',
-            },
-        });
-        if (!resp.ok) {
-            let msg = 'Erro ' + resp.status;
-            try { const e = await resp.json(); msg = e.error || msg; } catch(_) {}
-            alert(msg);
-            return;
+function exportPdf() {
+    if (!lastReport || !lastReport.tests) { alert('Corre os testes primeiro.'); return; }
+    const s = lastReport.summary || {};
+    const tests = lastReport.tests || [];
+    const failed = tests.filter(t => t.outcome !== 'passed');
+    const passed = tests.filter(t => t.outcome === 'passed');
+    const now = new Date().toLocaleString('pt-PT');
+
+    let html = '<!DOCTYPE html><html><head><meta charset="UTF-8">';
+    html += '<title>Firewall Test Report</title>';
+    html += '<style>';
+    html += 'body{font-family:Arial,sans-serif;max-width:800px;margin:0 auto;padding:30px;color:#222;}';
+    html += 'h1{text-align:center;margin-bottom:4px;}';
+    html += '.sub{text-align:center;color:#888;margin-bottom:20px;font-size:13px;}';
+    html += '.summary{display:flex;gap:10px;margin-bottom:20px;}';
+    html += '.card{flex:1;text-align:center;padding:14px 8px;border:1px solid #ddd;border-radius:6px;}';
+    html += '.card .num{font-size:28px;font-weight:700;}';
+    html += '.card .lbl{font-size:11px;color:#888;text-transform:uppercase;}';
+    html += '.pass{color:#22863a;} .fail{color:#cb2431;}';
+    html += 'h2{margin-top:20px;padding-bottom:4px;border-bottom:2px solid #eee;}';
+    html += '.row{padding:4px 0;font-size:13px;border-bottom:1px solid #f0f0f0;display:flex;gap:8px;}';
+    html += '.row .icon{width:16px;flex-shrink:0;text-align:center;}';
+    html += '.row .name{flex:1;}';
+    html += '.row .dur{color:#888;font-size:11px;width:60px;text-align:right;}';
+    html += '.detail{background:#f6f6f6;border-left:3px solid #cb2431;padding:8px 10px;margin:4px 0 10px 24px;font-family:monospace;font-size:11px;white-space:pre-wrap;color:#555;}';
+    html += '.footer{text-align:center;color:#aaa;font-size:11px;margin-top:30px;padding-top:10px;border-top:1px solid #eee;}';
+    html += '@media print{body{padding:10px;}}';
+    html += '</style></head><body>';
+
+    html += '<h1>Firewall Test Report</h1>';
+    html += '<div class="sub">Tema 18 — Firewall por Regras + Testes Automatizados<br>' + now + '</div>';
+
+    html += '<div class="summary">';
+    html += '<div class="card"><div class="num">' + (s.total || tests.length) + '</div><div class="lbl">Total</div></div>';
+    html += '<div class="card"><div class="num pass">' + (s.passed || passed.length) + '</div><div class="lbl">Passed</div></div>';
+    html += '<div class="card"><div class="num fail">' + (s.failed || failed.length) + '</div><div class="lbl">Failed</div></div>';
+    html += '<div class="card"><div class="num">' + (lastReport.duration || 0).toFixed(1) + 's</div><div class="lbl">Duration</div></div>';
+    html += '</div>';
+
+    if (failed.length) {
+        html += '<h2 class="fail">Failed (' + failed.length + ')</h2>';
+        for (const t of failed) {
+            const fn = t.nodeid.split("::").pop();
+            const desc = getTestDesc(t.nodeid);
+            html += '<div class="row"><span class="icon fail">&#10007;</span><span class="name">' +
+                esc(desc || fn) + (desc ? ' <span style="color:#888;font-size:11px;">(' + esc(fn) + ')</span>' : '') +
+                '</span><span class="dur">' + (t.duration || 0).toFixed(2) + 's</span></div>';
+            const lr = (t.call && t.call.longrepr) || t.longrepr || '';
+            if (lr) html += '<div class="detail">' + esc(String(lr)).substring(0, 500) + '</div>';
         }
-        const blob = await resp.blob();
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'firewall-report.pdf';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        setTimeout(() => URL.revokeObjectURL(url), 1000);
-    } catch (e) { alert('Erro ao exportar: ' + e.message); }
-    finally { btn.disabled = false; btn.textContent = 'Export PDF'; }
+    }
+
+    if (passed.length) {
+        html += '<h2 class="pass">Passed (' + passed.length + ')</h2>';
+        for (const t of passed) {
+            const fn = t.nodeid.split("::").pop();
+            const desc = getTestDesc(t.nodeid);
+            html += '<div class="row"><span class="icon pass">&#10003;</span><span class="name">' +
+                esc(desc || fn) + (desc ? ' <span style="color:#888;font-size:11px;">(' + esc(fn) + ')</span>' : '') +
+                '</span><span class="dur">' + (t.duration || 0).toFixed(2) + 's</span></div>';
+        }
+    }
+
+    html += '<div class="footer">Generated by Firewall Test Dashboard</div>';
+    html += '</body></html>';
+
+    const w = window.open('', '_blank');
+    w.document.write(html);
+    w.document.close();
+    setTimeout(() => w.print(), 300);
 }
+
+function esc(s) { const d = document.createElement('div'); d.textContent = String(s); return d.innerHTML; }
 
 /* ============ RULES ============ */
 async function loadRules() {
