@@ -630,19 +630,15 @@ function buildHistogram(values, numBins) {
 }
 
 /* ============ EXPORT PDF ============ */
-async function exportPdf() {
-    const btn = document.getElementById('btnPdf');
-    btn.disabled = true; btn.textContent = 'A gerar...';
-    try {
-        const resp = await fetch('/api/export-pdf');
-        if (!resp.ok) { const e = await resp.json(); alert(e.error || 'Erro'); return; }
-        const blob = await resp.blob();
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a'); a.href = url;
-        a.download = 'firewall-report.pdf'; a.click();
-        URL.revokeObjectURL(url);
-    } catch (e) { alert('Erro: ' + e.message); }
-    finally { btn.disabled = false; btn.textContent = 'Export PDF'; }
+function exportPdf() {
+    // Direct download via anchor — avoids fetch+blob issues with binary
+    // responses through ngrok/proxies
+    const a = document.createElement('a');
+    a.href = '/api/export-pdf';
+    a.download = 'firewall-report.pdf';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
 }
 
 /* ============ RULES ============ */

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Firewall Test Dashboard — HTTP API + UI for running tests in the browser."""
 
+import ast
 import os
 import re
 import sys
@@ -71,36 +72,42 @@ def teardown():
     })
 
 
+def _extract_docstrings(filepath):
+    """Parse a Python file with ast and return {func_name: first_line_of_docstring}."""
+    docs = {}
+    try:
+        with open(filepath) as f:
+            tree = ast.parse(f.read(), filename=filepath)
+    except Exception:
+        return docs
+
+    for node in ast.walk(tree):
+        # Top-level functions: tests/test_foo.py::test_bar
+        if isinstance(node, ast.FunctionDef):
+            ds = ast.get_docstring(node)
+            if ds:
+                docs[node.name] = ds.strip().split("\n")[0]
+        # Methods inside classes: tests/test_foo.py::TestClass::test_bar
+        if isinstance(node, ast.ClassDef):
+            for item in node.body:
+                if isinstance(item, ast.FunctionDef):
+                    ds = ast.get_docstring(item)
+                    if ds:
+                        docs[f"{node.name}::{item.name}"] = ds.strip().split("\n")[0]
+    return docs
+
+
 @app.route("/api/tests")
 def list_tests():
-    """Collect tests and extract docstrings for human-readable descriptions."""
-    collect_report = "/tmp/firewall-test-collect.json"
-    if os.path.exists(collect_report):
-        os.remove(collect_report)
-
+    """Collect tests via pytest and extract docstrings via ast."""
     result = subprocess.run(
-        [PY, "-m", "pytest", "tests/", "--collect-only", "-q",
-         "--no-header",
-         "--json-report", f"--json-report-file={collect_report}"],
+        [PY, "-m", "pytest", "tests/", "--collect-only", "-q", "--no-header"],
         capture_output=True, text=True, cwd=PROJECT_DIR,
     )
 
-    # Build a nodeid → docstring map from the JSON report
-    docstrings = {}
-    if os.path.exists(collect_report):
-        try:
-            with open(collect_report) as f:
-                report = json.load(f)
-            for item in report.get("collectors", []):
-                for child in item.get("result", []):
-                    nid = child.get("nodeid", "")
-                    doc = child.get("doc", "")
-                    if nid and doc:
-                        docstrings[nid] = doc.strip().split("\n")[0]
-        except Exception:
-            pass
+    # Cache of docstrings per file
+    docstring_cache = {}
 
-    # Parse the plain-text output to get the test tree structure
     organized = {}
     for line in result.stdout.splitlines():
         line = line.strip()
@@ -113,7 +120,19 @@ def list_tests():
         else:
             cls, test_name = "_module", parts[1]
 
-        desc = docstrings.get(line, "")
+        # Extract docstrings from this file (once per file)
+        if file_ not in docstring_cache:
+            full_path = os.path.join(PROJECT_DIR, file_)
+            docstring_cache[file_] = _extract_docstrings(full_path)
+        file_docs = docstring_cache[file_]
+
+        # Look up: first try "Class::method", then just "method"
+        desc = ""
+        if cls != "_module":
+            desc = file_docs.get(f"{cls}::{test_name}", "")
+        if not desc:
+            desc = file_docs.get(test_name, "")
+
         organized.setdefault(file_, {}).setdefault(cls, []).append({
             "name": test_name, "id": line, "desc": desc,
         })
