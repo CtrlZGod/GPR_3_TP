@@ -36,7 +36,11 @@ fi
 # echo "Waiting 5 seconds for Flask to warm up..."
 sleep 5
 
-# 6. Launch ngrok (Keep this in the foreground)
+# 6. Activate venv and install dependencies
 source venv/bin/activate
+echo "Installing dependencies..."
+pip install -r requirements.txt
+
+# 7. Launch ngrok (Keep this in the foreground)
 echo "Set ngrok token..."
 make ngrok

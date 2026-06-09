@@ -31,308 +31,136 @@ h1 { color: var(--accent); margin-bottom: 4px; font-size: 24px; }
 .container { max-width: 1500px; margin: 0 auto; }
 
 .topology-bar {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 14px 18px;
-    margin-bottom: 20px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex-wrap: wrap;
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 8px; padding: 14px 18px; margin-bottom: 20px;
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
 }
-.status-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: var(--fg-dim);
-    box-shadow: 0 0 8px currentColor;
-}
+.status-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--fg-dim); box-shadow: 0 0 8px currentColor; }
 .status-dot.up { background: var(--success); color: var(--success); }
 .status-dot.down { background: var(--fail); color: var(--fail); }
 .status-text { font-weight: 500; }
 .bar-actions { margin-left: auto; display: flex; gap: 8px; flex-wrap: wrap; }
 
 button {
-    background: var(--accent);
-    color: #fff;
-    border: none;
-    padding: 7px 14px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 13px;
+    background: var(--accent); color: #fff; border: none; padding: 7px 14px;
+    border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px;
     transition: opacity 0.15s, transform 0.1s;
 }
 button:hover:not(:disabled) { opacity: 0.85; }
 button:active { transform: scale(0.97); }
 button:disabled { opacity: 0.5; cursor: not-allowed; }
-button.secondary {
-    background: var(--bg-input);
-    color: var(--fg);
-    border: 1px solid var(--border);
-}
+button.secondary { background: var(--bg-input); color: var(--fg); border: 1px solid var(--border); }
 button.danger { background: var(--fail); }
 button.success { background: var(--success); }
 
-.layout {
-    display: grid;
-    grid-template-columns: 500px 1fr;
-    gap: 20px;
-}
+.layout { display: grid; grid-template-columns: 500px 1fr; gap: 20px; }
 @media (max-width: 1000px) { .layout { grid-template-columns: 1fr; } }
 
-.panel {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-}
-.panel-header {
-    padding: 12px 16px;
-    background: var(--bg-input);
-    border-bottom: 1px solid var(--border);
-    font-weight: 600;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
+.panel { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; display: flex; flex-direction: column; }
+.panel-header { padding: 12px 16px; background: var(--bg-input); border-bottom: 1px solid var(--border); font-weight: 600; display: flex; justify-content: space-between; align-items: center; }
 .panel-body { padding: 14px; max-height: 75vh; overflow-y: auto; }
 
 .test-file { margin-bottom: 10px; }
-.test-file-name {
-    font-weight: 600;
-    color: var(--accent);
-    cursor: pointer;
-    user-select: none;
-    padding: 4px 0;
-}
+.test-file-name { font-weight: 600; color: var(--accent); cursor: pointer; user-select: none; padding: 4px 0; }
 .test-class { margin-left: 14px; }
-.test-class-name {
-    color: var(--warn);
-    font-size: 13px;
-    cursor: pointer;
-    user-select: none;
-    padding: 3px 0;
-    margin-top: 4px;
-}
-.test-item {
-    display: flex;
-    align-items: center;
-    padding: 4px 4px 4px 28px;
-    font-size: 12.5px;
-    gap: 8px;
-    border-radius: 4px;
-    transition: background 0.1s;
-}
+.test-class-name { color: var(--warn); font-size: 13px; cursor: pointer; user-select: none; padding: 3px 0; margin-top: 4px; }
+.test-item { display: flex; align-items: center; padding: 4px 4px 4px 28px; font-size: 12.5px; gap: 8px; border-radius: 4px; transition: background 0.1s; }
 .test-item:hover { background: rgba(255,255,255,0.03); }
 .test-item input { cursor: pointer; flex-shrink: 0; }
-.test-name {
-    display: flex;
-    flex-direction: column;
-    gap: 1px;
-    min-width: 0;
-}
-.test-desc {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, sans-serif;
-    font-size: 12px;
-    line-height: 1.3;
-}
-.test-func {
-    font-family: 'SF Mono', Consolas, Menlo, monospace;
-    font-size: 10px;
-    color: var(--fg-dim);
-    opacity: 0.7;
-}
-.test-item.passed .test-name { color: var(--success); }
-.test-item.failed .test-name { color: var(--fail); }
-.test-item.skipped .test-name { color: var(--warn); }
-.test-item.running .test-name { color: var(--accent); }
+.test-name { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.test-desc { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, sans-serif; font-size: 12px; line-height: 1.3; }
+.test-func { font-family: 'SF Mono', Consolas, Menlo, monospace; font-size: 10px; color: var(--fg-dim); opacity: 0.7; }
+.test-item.passed .test-desc { color: var(--success); }
+.test-item.failed .test-desc { color: var(--fail); }
+.test-item.skipped .test-desc { color: var(--warn); }
+.test-item.running .test-desc { color: var(--accent); }
 .test-item.running { background: rgba(88, 166, 255, 0.08); }
-.test-status {
-    margin-left: auto;
-    font-size: 10px;
-    padding: 1px 6px;
-    border-radius: 3px;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-}
+.test-status { margin-left: auto; font-size: 10px; padding: 1px 6px; border-radius: 3px; font-weight: 700; letter-spacing: 0.5px; flex-shrink: 0; }
 .test-status.passed { background: var(--success); color: #fff; }
 .test-status.failed { background: var(--fail); color: #fff; }
 .test-status.skipped { background: var(--warn); color: #fff; }
 .test-status.running { background: var(--accent); color: #fff; }
 
-.progress-wrap {
-    margin: 10px 0 14px;
-    padding: 10px;
-    background: var(--bg-input);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-}
-.progress-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 12px;
-    margin-bottom: 6px;
-}
+.progress-wrap { margin: 10px 0 14px; padding: 10px; background: var(--bg-input); border: 1px solid var(--border); border-radius: 6px; }
+.progress-row { display: flex; justify-content: space-between; align-items: center; font-size: 12px; margin-bottom: 6px; }
 .progress-label { color: var(--fg-dim); }
 .progress-value { font-weight: 600; }
 .progress-value .pass { color: var(--success); }
 .progress-value .fail { color: var(--fail); }
-.progress-track {
-    background: #010409;
-    height: 8px;
-    border-radius: 4px;
-    overflow: hidden;
-    position: relative;
-}
-.progress-bar {
-    height: 100%;
-    width: 0%;
-    background: linear-gradient(90deg, var(--accent), var(--success));
-    transition: width 0.25s ease;
-}
-.progress-bar.has-fail {
-    background: linear-gradient(90deg, var(--accent), var(--fail));
-}
+.progress-track { background: #010409; height: 8px; border-radius: 4px; overflow: hidden; }
+.progress-bar { height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent), var(--success)); transition: width 0.25s ease; }
+.progress-bar.has-fail { background: linear-gradient(90deg, var(--accent), var(--fail)); }
 
-pre {
-    background: #010409;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 12px;
-    font-size: 12px;
-    line-height: 1.55;
-    overflow-x: auto;
-    white-space: pre-wrap;
-    word-wrap: break-word;
-    font-family: 'SF Mono', Consolas, Menlo, monospace;
-}
+pre { background: #010409; border: 1px solid var(--border); border-radius: 6px; padding: 12px; font-size: 12px; line-height: 1.55; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word; font-family: 'SF Mono', Consolas, Menlo, monospace; }
 
-.summary {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 10px;
-    margin-bottom: 14px;
-}
-.summary-card {
-    text-align: center;
-    padding: 12px 8px;
-    background: var(--bg-input);
-    border-radius: 6px;
-    border: 1px solid var(--border);
-}
+.summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 14px; }
+.summary-card { text-align: center; padding: 12px 8px; background: var(--bg-input); border-radius: 6px; border: 1px solid var(--border); }
 .summary-card .num { font-size: 22px; font-weight: 700; line-height: 1.2; }
-.summary-card .label {
-    font-size: 11px;
-    color: var(--fg-dim);
-    text-transform: uppercase;
-    margin-top: 2px;
-    letter-spacing: 0.5px;
-}
+.summary-card .label { font-size: 11px; color: var(--fg-dim); text-transform: uppercase; margin-top: 2px; letter-spacing: 0.5px; }
 .summary-card.passed .num { color: var(--success); }
 .summary-card.failed .num { color: var(--fail); }
 .summary-card.total .num { color: var(--accent); }
 .summary-card.duration .num { color: var(--warn); }
 
-.controls {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 14px;
-    flex-wrap: wrap;
-    padding-bottom: 12px;
-    border-bottom: 1px solid var(--border);
-}
+.controls { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
 
-.spinner {
-    display: inline-block;
-    width: 11px;
-    height: 11px;
-    border: 2px solid rgba(255,255,255,0.3);
-    border-top-color: #fff;
-    border-radius: 50%;
-    animation: spin 0.7s linear infinite;
-    vertical-align: middle;
-    margin-right: 6px;
-}
+.spinner { display: inline-block; width: 11px; height: 11px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 6px; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-.tabs {
-    display: flex;
-    gap: 0;
-    width: 100%;
-}
-.tab {
-    padding: 10px 16px;
-    cursor: pointer;
-    border-bottom: 2px solid transparent;
-    color: var(--fg-dim);
-    font-weight: 500;
-    transition: color 0.1s;
-}
+.tabs { display: flex; gap: 0; width: 100%; flex-wrap: wrap; }
+.tab { padding: 10px 14px; cursor: pointer; border-bottom: 2px solid transparent; color: var(--fg-dim); font-weight: 500; transition: color 0.1s; font-size: 13px; }
 .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
 .tab:hover:not(.active) { color: var(--fg); }
 .tab-content { display: none; }
 .tab-content.active { display: block; }
 
-.result-row {
-    padding: 6px 8px;
-    border-radius: 4px;
-    font-family: 'SF Mono', Consolas, Menlo, monospace;
-    font-size: 12.5px;
-    margin: 2px 0;
-}
+.result-row { padding: 6px 8px; border-radius: 4px; font-size: 12.5px; margin: 2px 0; }
 .result-row.passed { color: var(--success); }
 .result-row.failed { color: var(--fail); background: rgba(248, 81, 73, 0.08); }
 .result-row .icon { display: inline-block; width: 16px; }
-.failure-detail {
-    background: #010409;
-    border-left: 3px solid var(--fail);
-    padding: 10px 12px;
-    margin: 6px 0 14px 24px;
-    font-family: 'SF Mono', Consolas, Menlo, monospace;
-    font-size: 11.5px;
-    white-space: pre-wrap;
-    border-radius: 0 4px 4px 0;
-    color: var(--fg-dim);
-}
+.failure-detail { background: #010409; border-left: 3px solid var(--fail); padding: 10px 12px; margin: 6px 0 14px 24px; font-family: 'SF Mono', Consolas, Menlo, monospace; font-size: 11.5px; white-space: pre-wrap; border-radius: 0 4px 4px 0; color: var(--fg-dim); }
 
-.empty {
-    text-align: center;
-    color: var(--fg-dim);
-    padding: 40px 20px;
-    font-style: italic;
-}
-
-.toggle-arrow {
-    display: inline-block;
-    width: 12px;
-    transition: transform 0.15s;
-}
+.empty { text-align: center; color: var(--fg-dim); padding: 40px 20px; font-style: italic; }
+.toggle-arrow { display: inline-block; width: 12px; transition: transform 0.15s; }
 .collapsed > .toggle-arrow { transform: rotate(-90deg); }
 .collapsed + div { display: none; }
+
+/* Topology dynamic links */
+.topo-link { transition: stroke 0.4s, opacity 0.3s, stroke-width 0.3s; }
+.topo-badge { font-size: 9px; font-weight: 700; }
+
+/* Benchmark */
+.bench-row { display: flex; align-items: center; gap: 10px; margin: 6px 0; font-size: 12px; }
+.bench-label { width: 160px; flex-shrink: 0; font-weight: 500; }
+.bench-bar-wrap { flex: 1; height: 22px; background: #010409; border-radius: 4px; overflow: hidden; position: relative; }
+.bench-bar { height: 100%; border-radius: 4px; transition: width 0.5s ease; display: flex; align-items: center; padding: 0 6px; font-size: 10px; font-weight: 600; color: #fff; white-space: nowrap; }
+.bench-stats { width: 180px; flex-shrink: 0; font-size: 11px; color: var(--fg-dim); font-family: 'SF Mono', Consolas, monospace; }
+.histo-wrap { margin-top: 10px; padding: 10px; background: var(--bg-input); border: 1px solid var(--border); border-radius: 6px; }
+.histo-title { font-size: 12px; font-weight: 600; margin-bottom: 8px; }
+.histo-bars { display: flex; align-items: flex-end; gap: 1px; height: 80px; }
+.histo-bar { flex: 1; background: var(--accent); border-radius: 2px 2px 0 0; min-width: 2px; transition: height 0.3s; position: relative; }
+.histo-bar:hover { opacity: 0.8; }
+.histo-axis { display: flex; justify-content: space-between; font-size: 9px; color: var(--fg-dim); margin-top: 2px; }
 </style>
 </head>
 <body>
 <div class="container">
-    <h1>🔥 Firewall Test Dashboard</h1>
-    <div class="subtitle">nftables + Linux namespaces + pytest — projeto GPR</div>
+    <h1>Firewall Test Dashboard</h1>
+    <div class="subtitle">nftables + Linux namespaces + pytest</div>
 
     <div class="topology-bar">
         <div class="status-dot" id="statusDot"></div>
         <div class="status-text" id="statusText">A verificar topologia...</div>
         <div class="bar-actions">
-            <button onclick="setupTopology()" id="btnSetup" class="success">▶ Setup</button>
-            <button onclick="teardownTopology()" id="btnTeardown" class="danger">⏹ Teardown</button>
-            <button onclick="loadRules()" class="secondary">📋 Rules</button>
-            <button onclick="loadTests()" class="secondary">🔄 Refresh</button>
+            <button onclick="setupTopology()" id="btnSetup" class="success">Setup</button>
+            <button onclick="teardownTopology()" id="btnTeardown" class="danger">Teardown</button>
+            <button onclick="loadRules()" class="secondary">Rules</button>
+            <button onclick="loadTests()" class="secondary">Refresh</button>
         </div>
     </div>
 
     <div class="layout">
+        <!-- LEFT PANEL: Tests -->
         <div class="panel">
             <div class="panel-header">
                 <span>Testes</span>
@@ -340,130 +168,128 @@ pre {
             </div>
             <div class="panel-body">
                 <div class="controls">
-                    <button onclick="selectAll(true)" class="secondary">✓ All</button>
-                    <button onclick="selectAll(false)" class="secondary">✗ None</button>
-                    <button onclick="runSelected()" id="btnRun">▶ Run Selected</button>
+                    <button onclick="selectAll(true)" class="secondary">All</button>
+                    <button onclick="selectAll(false)" class="secondary">None</button>
+                    <button onclick="runSelected()" id="btnRun">Run Selected</button>
                 </div>
                 <div id="progressWrap" class="progress-wrap" style="display: none;">
                     <div class="progress-row">
-                        <span class="progress-label" id="progressLabel">A correr…</span>
+                        <span class="progress-label" id="progressLabel">A correr...</span>
                         <span class="progress-value">
                             <span class="pass" id="progressPass">0</span> /
                             <span class="fail" id="progressFail">0</span> /
                             <span id="progressTotal">0</span>
                         </span>
                     </div>
-                    <div class="progress-track">
-                        <div class="progress-bar" id="progressBar"></div>
-                    </div>
+                    <div class="progress-track"><div class="progress-bar" id="progressBar"></div></div>
                 </div>
                 <div id="testList" class="empty">A carregar testes...</div>
             </div>
         </div>
 
+        <!-- RIGHT PANEL: Tabs -->
         <div class="panel">
             <div class="panel-header">
                 <div class="tabs">
-                    <div class="tab active" data-tab="results" onclick="showTab(this)">📊 Results</div>
-                    <div class="tab" data-tab="topology" onclick="showTab(this)">🗺 Topology</div>
-                    <div class="tab" data-tab="output" onclick="showTab(this)">📝 Output</div>
-                    <div class="tab" data-tab="rules" onclick="showTab(this)">🔧 Rules</div>
+                    <div class="tab active" data-tab="results" onclick="showTab(this)">Results</div>
+                    <div class="tab" data-tab="topology" onclick="showTab(this)">Topology</div>
+                    <div class="tab" data-tab="benchmark" onclick="showTab(this)">Benchmark</div>
+                    <div class="tab" data-tab="output" onclick="showTab(this)">Output</div>
+                    <div class="tab" data-tab="rules" onclick="showTab(this)">Rules</div>
                 </div>
             </div>
             <div class="panel-body">
+
+                <!-- TAB: Results -->
                 <div id="tab-results" class="tab-content active">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                        <span></span>
+                        <button onclick="exportPdf()" class="secondary" id="btnPdf" style="font-size:12px;">Export PDF</button>
+                    </div>
                     <div class="summary" id="summary" style="display: none;">
-                        <div class="summary-card total">
-                            <div class="num" id="numTotal">0</div>
-                            <div class="label">Total</div>
-                        </div>
-                        <div class="summary-card passed">
-                            <div class="num" id="numPassed">0</div>
-                            <div class="label">Passed</div>
-                        </div>
-                        <div class="summary-card failed">
-                            <div class="num" id="numFailed">0</div>
-                            <div class="label">Failed</div>
-                        </div>
-                        <div class="summary-card duration">
-                            <div class="num" id="duration">—</div>
-                            <div class="label">Duration</div>
-                        </div>
+                        <div class="summary-card total"><div class="num" id="numTotal">0</div><div class="label">Total</div></div>
+                        <div class="summary-card passed"><div class="num" id="numPassed">0</div><div class="label">Passed</div></div>
+                        <div class="summary-card failed"><div class="num" id="numFailed">0</div><div class="label">Failed</div></div>
+                        <div class="summary-card duration"><div class="num" id="duration">--</div><div class="label">Duration</div></div>
                     </div>
                     <div id="resultDetails" class="empty">Nenhum teste corrido ainda.</div>
                 </div>
+
+                <!-- TAB: Topology -->
                 <div id="tab-topology" class="tab-content">
-                    <svg viewBox="0 0 700 420" style="width:100%; max-width:700px; margin:0 auto; display:block;">
-                        <!-- WAN zone -->
-                        <rect x="20" y="20" width="180" height="120" rx="10" fill="#1a1e2e" stroke="#f85149" stroke-width="2"/>
-                        <text x="110" y="52" text-anchor="middle" fill="#f85149" font-weight="700" font-size="14">WAN (ns-wan)</text>
-                        <text x="110" y="75" text-anchor="middle" fill="#7d8590" font-size="12">10.0.1.10/24</text>
-                        <text x="110" y="95" text-anchor="middle" fill="#7d8590" font-size="11">Host externo</text>
-                        <text x="110" y="125" text-anchor="middle" fill="#f8514980" font-size="10">veth-wan</text>
+                    <svg id="topoSvg" viewBox="0 0 700 420" style="width:100%; max-width:700px; margin:0 auto; display:block;">
+                        <!-- WAN -->
+                        <rect x="20" y="20" width="180" height="110" rx="10" fill="#1a1e2e" stroke="#f85149" stroke-width="2"/>
+                        <text x="110" y="50" text-anchor="middle" fill="#f85149" font-weight="700" font-size="14">WAN (ns-wan)</text>
+                        <text x="110" y="72" text-anchor="middle" fill="#7d8590" font-size="12">10.0.1.10/24</text>
+                        <text x="110" y="92" text-anchor="middle" fill="#7d8590" font-size="11">Host externo</text>
 
-                        <!-- Firewall zone -->
-                        <rect x="230" y="140" width="240" height="140" rx="12" fill="#1a2618" stroke="#3fb950" stroke-width="2.5"/>
-                        <text x="350" y="170" text-anchor="middle" fill="#3fb950" font-weight="700" font-size="15">FIREWALL (ns-fw)</text>
-                        <text x="280" y="200" text-anchor="middle" fill="#7d8590" font-size="11">.1.1 (WAN)</text>
-                        <text x="350" y="200" text-anchor="middle" fill="#7d8590" font-size="11">.2.1 (LAN)</text>
-                        <text x="420" y="200" text-anchor="middle" fill="#7d8590" font-size="11">.3.1 (DMZ)</text>
-                        <text x="350" y="225" text-anchor="middle" fill="#3fb95080" font-size="11">nftables + NAT</text>
-                        <text x="350" y="245" text-anchor="middle" fill="#3fb95080" font-size="11">br-lan (bridge L2)</text>
-                        <text x="350" y="265" text-anchor="middle" fill="#3fb95080" font-size="10">ip_forward = 1</text>
+                        <!-- Firewall -->
+                        <rect x="230" y="140" width="240" height="130" rx="12" fill="#1a2618" stroke="#3fb950" stroke-width="2.5"/>
+                        <text x="350" y="168" text-anchor="middle" fill="#3fb950" font-weight="700" font-size="15">FIREWALL (ns-fw)</text>
+                        <text x="350" y="192" text-anchor="middle" fill="#7d8590" font-size="11">nftables + NAT + br-lan</text>
+                        <text x="280" y="215" text-anchor="middle" fill="#3fb95080" font-size="10">.1.1</text>
+                        <text x="350" y="215" text-anchor="middle" fill="#3fb95080" font-size="10">.2.1</text>
+                        <text x="420" y="215" text-anchor="middle" fill="#3fb95080" font-size="10">.3.1</text>
 
-                        <!-- DMZ zone -->
-                        <rect x="500" y="20" width="180" height="120" rx="10" fill="#1a1e2e" stroke="#d29922" stroke-width="2"/>
-                        <text x="590" y="52" text-anchor="middle" fill="#d29922" font-weight="700" font-size="14">DMZ (ns-dmz)</text>
-                        <text x="590" y="75" text-anchor="middle" fill="#7d8590" font-size="12">10.0.3.10/24</text>
-                        <text x="590" y="95" text-anchor="middle" fill="#7d8590" font-size="11">HTTP/HTTPS/DNS</text>
-                        <text x="590" y="125" text-anchor="middle" fill="#d2992280" font-size="10">veth-dmz</text>
+                        <!-- DMZ -->
+                        <rect x="500" y="20" width="180" height="110" rx="10" fill="#1a1e2e" stroke="#d29922" stroke-width="2"/>
+                        <text x="590" y="50" text-anchor="middle" fill="#d29922" font-weight="700" font-size="14">DMZ (ns-dmz)</text>
+                        <text x="590" y="72" text-anchor="middle" fill="#7d8590" font-size="12">10.0.3.10/24</text>
+                        <text x="590" y="92" text-anchor="middle" fill="#7d8590" font-size="11">HTTP / HTTPS / DNS</text>
 
-                        <!-- LAN zone -->
-                        <rect x="170" y="310" width="140" height="100" rx="10" fill="#1a1e2e" stroke="#58a6ff" stroke-width="2"/>
-                        <text x="240" y="340" text-anchor="middle" fill="#58a6ff" font-weight="700" font-size="13">ns-lan</text>
-                        <text x="240" y="360" text-anchor="middle" fill="#7d8590" font-size="12">10.0.2.10/24</text>
-                        <text x="240" y="380" text-anchor="middle" fill="#7d8590" font-size="11">Workstation</text>
+                        <!-- LAN -->
+                        <rect x="170" y="305" width="140" height="95" rx="10" fill="#1a1e2e" stroke="#58a6ff" stroke-width="2"/>
+                        <text x="240" y="333" text-anchor="middle" fill="#58a6ff" font-weight="700" font-size="13">ns-lan</text>
+                        <text x="240" y="353" text-anchor="middle" fill="#7d8590" font-size="11">10.0.2.10</text>
+                        <text x="240" y="373" text-anchor="middle" fill="#7d8590" font-size="10">Workstation</text>
 
-                        <rect x="390" y="310" width="140" height="100" rx="10" fill="#1a1e2e" stroke="#58a6ff" stroke-width="2"/>
-                        <text x="460" y="340" text-anchor="middle" fill="#58a6ff" font-weight="700" font-size="13">ns-lan2</text>
-                        <text x="460" y="360" text-anchor="middle" fill="#7d8590" font-size="12">10.0.2.20/24</text>
-                        <text x="460" y="380" text-anchor="middle" fill="#7d8590" font-size="11">Workstation 2</text>
+                        <rect x="390" y="305" width="140" height="95" rx="10" fill="#1a1e2e" stroke="#58a6ff" stroke-width="2"/>
+                        <text x="460" y="333" text-anchor="middle" fill="#58a6ff" font-weight="700" font-size="13">ns-lan2</text>
+                        <text x="460" y="353" text-anchor="middle" fill="#7d8590" font-size="11">10.0.2.20</text>
+                        <text x="460" y="373" text-anchor="middle" fill="#7d8590" font-size="10">Workstation 2</text>
 
-                        <!-- Links -->
-                        <!-- WAN → FW -->
-                        <line x1="110" y1="140" x2="260" y2="175" stroke="#f85149" stroke-width="2" stroke-dasharray="6,3" opacity="0.6"/>
-                        <!-- DMZ → FW -->
-                        <line x1="590" y1="140" x2="440" y2="175" stroke="#d29922" stroke-width="2" stroke-dasharray="6,3" opacity="0.6"/>
-                        <!-- FW → LAN1 -->
-                        <line x1="310" y1="280" x2="240" y2="310" stroke="#58a6ff" stroke-width="2" stroke-dasharray="6,3" opacity="0.6"/>
-                        <!-- FW → LAN2 -->
-                        <line x1="390" y1="280" x2="460" y2="310" stroke="#58a6ff" stroke-width="2" stroke-dasharray="6,3" opacity="0.6"/>
+                        <!-- Links (with IDs for dynamic coloring) -->
+                        <line id="link-wan-fw"  class="topo-link" x1="115" y1="130" x2="265" y2="170" stroke="#7d8590" stroke-width="2.5" stroke-dasharray="6,3" opacity="0.5"/>
+                        <line id="link-dmz-fw"  class="topo-link" x1="585" y1="130" x2="435" y2="170" stroke="#7d8590" stroke-width="2.5" stroke-dasharray="6,3" opacity="0.5"/>
+                        <line id="link-lan1-fw" class="topo-link" x1="240" y1="305" x2="310" y2="270" stroke="#7d8590" stroke-width="2.5" stroke-dasharray="6,3" opacity="0.5"/>
+                        <line id="link-lan2-fw" class="topo-link" x1="460" y1="305" x2="390" y2="270" stroke="#7d8590" stroke-width="2.5" stroke-dasharray="6,3" opacity="0.5"/>
 
-                        <!-- Zone labels -->
+                        <!-- Direction badges (dynamically colored) -->
+                        <g id="badge-wan-dmz"><rect x="300" y="60"  width="100" height="18" rx="4" fill="#21262d" stroke="#30363d"/><text class="topo-badge" x="350" y="73" text-anchor="middle" fill="#7d8590">WAN→DMZ</text></g>
+                        <g id="badge-wan-lan"><rect x="45"  y="155" width="95"  height="18" rx="4" fill="#21262d" stroke="#30363d"/><text class="topo-badge" x="92"  y="168" text-anchor="middle" fill="#7d8590">WAN→LAN</text></g>
+                        <g id="badge-lan-wan"><rect x="45"  y="178" width="95"  height="18" rx="4" fill="#21262d" stroke="#30363d"/><text class="topo-badge" x="92"  y="191" text-anchor="middle" fill="#7d8590">LAN→WAN</text></g>
+                        <g id="badge-lan-dmz"><rect x="555" y="155" width="95"  height="18" rx="4" fill="#21262d" stroke="#30363d"/><text class="topo-badge" x="602" y="168" text-anchor="middle" fill="#7d8590">LAN→DMZ</text></g>
+                        <g id="badge-dmz-lan"><rect x="555" y="178" width="95"  height="18" rx="4" fill="#21262d" stroke="#30363d"/><text class="topo-badge" x="602" y="191" text-anchor="middle" fill="#7d8590">DMZ→LAN</text></g>
+                        <g id="badge-dmz-wan"><rect x="300" y="100" width="100" height="18" rx="4" fill="#21262d" stroke="#30363d"/><text class="topo-badge" x="350" y="113" text-anchor="middle" fill="#7d8590">DMZ→WAN</text></g>
+
                         <text x="30" y="15" fill="#f8514980" font-size="10" font-weight="600">UNTRUSTED</text>
                         <text x="510" y="15" fill="#d2992280" font-size="10" font-weight="600">SEMI-TRUSTED</text>
-                        <text x="245" y="305" fill="#58a6ff80" font-size="10" font-weight="600">TRUSTED</text>
+                        <text x="245" y="300" fill="#58a6ff80" font-size="10" font-weight="600">TRUSTED</text>
                     </svg>
-
-                    <div style="margin-top: 16px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; font-size: 12px;">
-                        <div style="background: var(--bg-input); padding: 10px; border-radius: 6px; border-left: 3px solid #f85149;">
-                            <div style="color: #f85149; font-weight: 600; margin-bottom: 4px;">WAN → LAN</div>
-                            <div style="color: var(--fg-dim);">Sempre bloqueado. Hosts externos nunca acedem a rede interna.</div>
-                        </div>
-                        <div style="background: var(--bg-input); padding: 10px; border-radius: 6px; border-left: 3px solid #d29922;">
-                            <div style="color: #d29922; font-weight: 600; margin-bottom: 4px;">DMZ → LAN</div>
-                            <div style="color: var(--fg-dim);">Sempre bloqueado. DMZ comprometida nao atinge a LAN.</div>
-                        </div>
-                        <div style="background: var(--bg-input); padding: 10px; border-radius: 6px; border-left: 3px solid #3fb950;">
-                            <div style="color: #3fb950; font-weight: 600; margin-bottom: 4px;">LAN → WAN</div>
-                            <div style="color: var(--fg-dim);">HTTP, HTTPS e DNS. Navegacao web dos utilizadores.</div>
-                        </div>
+                    <div id="topoLegend" style="margin-top:12px; font-size:11px; color:var(--fg-dim); text-align:center;">
+                        Corre os testes para ver os resultados no diagrama.
                     </div>
                 </div>
 
+                <!-- TAB: Benchmark -->
+                <div id="tab-benchmark" class="tab-content">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+                        <div>
+                            <div style="font-weight:600;">Latency Benchmark</div>
+                            <div style="font-size:11px; color:var(--fg-dim);">50 pings por rota, mede latencia adicionada pelas regras nftables</div>
+                        </div>
+                        <button onclick="runBenchmark()" id="btnBench">Run Benchmark</button>
+                    </div>
+                    <div id="benchResults" class="empty">Clica "Run Benchmark" para medir latencias.</div>
+                </div>
+
+                <!-- TAB: Output -->
                 <div id="tab-output" class="tab-content">
                     <pre id="output">Nenhum output ainda.</pre>
                 </div>
+
+                <!-- TAB: Rules -->
                 <div id="tab-rules" class="tab-content">
                     <pre id="rules">Clica "Rules" para carregar.</pre>
                 </div>
@@ -478,120 +304,68 @@ let lastReport = null;
 
 async function api(method, path, body) {
     const opts = { method };
-    if (body) {
-        opts.headers = { 'Content-Type': 'application/json' };
-        opts.body = JSON.stringify(body);
-    }
+    if (body) { opts.headers = { 'Content-Type': 'application/json' }; opts.body = JSON.stringify(body); }
     const r = await fetch(path, opts);
     return r.json();
 }
 
+/* ============ STATUS ============ */
 async function refreshStatus() {
     try {
         const d = await api('GET', '/api/status');
         const dot = document.getElementById('statusDot');
         const text = document.getElementById('statusText');
-        if (d.up) {
-            dot.className = 'status-dot up';
-            text.innerHTML = '<strong>Topologia UP</strong> · ' + d.namespaces.length + ' namespaces ativos';
-        } else if (d.namespaces.length > 0) {
-            dot.className = 'status-dot down';
-            text.innerHTML = '<strong>Topologia INCOMPLETA</strong> · ' + d.namespaces.join(', ');
-        } else {
-            dot.className = 'status-dot down';
-            text.innerHTML = '<strong>Topologia DOWN</strong>';
-        }
-    } catch (e) {
-        document.getElementById('statusText').textContent = 'Erro: ' + e.message;
-    }
+        if (d.up) { dot.className = 'status-dot up'; text.innerHTML = '<strong>Topologia UP</strong> · ' + d.namespaces.length + ' namespaces'; }
+        else if (d.namespaces.length > 0) { dot.className = 'status-dot down'; text.innerHTML = '<strong>INCOMPLETA</strong> · ' + d.namespaces.join(', '); }
+        else { dot.className = 'status-dot down'; text.innerHTML = '<strong>Topologia DOWN</strong>'; }
+    } catch (e) { document.getElementById('statusText').textContent = 'Erro: ' + e.message; }
 }
 
 async function setupTopology() {
     const btn = document.getElementById('btnSetup');
-    btn.disabled = true;
-    btn.innerHTML = '<span class="spinner"></span>A criar...';
-    try {
-        const r = await api('POST', '/api/setup');
-        document.getElementById('output').textContent = r.stdout + '\n' + (r.stderr || '');
-        showTabByName('output');
-        await refreshStatus();
-    } catch (e) {
-        alert('Setup falhou: ' + e.message);
-    } finally {
-        btn.disabled = false;
-        btn.innerHTML = '▶ Setup';
-    }
+    btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>A criar...';
+    try { const r = await api('POST', '/api/setup'); document.getElementById('output').textContent = r.stdout + '\n' + (r.stderr || ''); showTabByName('output'); await refreshStatus(); }
+    catch (e) { alert('Setup falhou: ' + e.message); }
+    finally { btn.disabled = false; btn.innerHTML = 'Setup'; }
 }
 
 async function teardownTopology() {
     const btn = document.getElementById('btnTeardown');
-    btn.disabled = true;
-    btn.innerHTML = '<span class="spinner"></span>A limpar...';
-    try {
-        const r = await api('POST', '/api/teardown');
-        document.getElementById('output').textContent = r.stdout + '\n' + (r.stderr || '');
-        showTabByName('output');
-        await refreshStatus();
-    } finally {
-        btn.disabled = false;
-        btn.innerHTML = '⏹ Teardown';
-    }
+    btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>A limpar...';
+    try { const r = await api('POST', '/api/teardown'); document.getElementById('output').textContent = r.stdout + '\n' + (r.stderr || ''); showTabByName('output'); await refreshStatus(); }
+    finally { btn.disabled = false; btn.innerHTML = 'Teardown'; }
 }
 
+/* ============ TESTS LIST ============ */
 async function loadTests() {
-    try {
-        testsData = await api('GET', '/api/tests');
-        renderTests();
-    } catch (e) {
-        document.getElementById('testList').innerHTML = '<div class="empty">Erro ao carregar testes: ' + e.message + '</div>';
-    }
+    try { testsData = await api('GET', '/api/tests'); renderTests(); }
+    catch (e) { document.getElementById('testList').innerHTML = '<div class="empty">Erro: ' + e.message + '</div>'; }
 }
 
 function renderTests() {
     const list = document.getElementById('testList');
     if (testsData._error) {
         const e = testsData._error;
-        list.innerHTML =
-            '<div style="color: var(--fail);"><strong>Test collection failed</strong></div>' +
-            '<div style="color: var(--fg-dim); font-size: 12px; margin-top: 4px;">' +
-            'Python: <code>' + escapeHtml(e.python || '?') + '</code><br>' +
-            'Return code: ' + e.returncode + '</div>' +
-            '<pre style="margin-top: 10px; font-size: 11px;">' +
-            escapeHtml((e.stderr || '') + '\n' + (e.stdout || '')) + '</pre>';
+        list.innerHTML = '<div style="color:var(--fail)"><strong>Test collection failed</strong></div>' +
+            '<pre style="margin-top:10px;font-size:11px;">' + escapeHtml((e.stderr || '') + '\n' + (e.stdout || '')) + '</pre>';
         return;
     }
-    if (Object.keys(testsData).length === 0) {
-        list.innerHTML = '<div class="empty">Sem testes encontrados.</div>';
-        return;
-    }
-    let html = '';
-    let total = 0;
+    if (!Object.keys(testsData).length) { list.innerHTML = '<div class="empty">Sem testes encontrados.</div>'; return; }
+    let html = '', total = 0;
     for (const [file, classes] of Object.entries(testsData)) {
         const fileShort = file.split('/').pop();
-        html += '<div class="test-file">';
-        html += '<div class="test-file-name" onclick="toggleNode(this)">';
-        html += '<span class="toggle-arrow">▼</span> ' + fileShort + '</div><div>';
+        html += '<div class="test-file"><div class="test-file-name" onclick="toggleNode(this)"><span class="toggle-arrow">▼</span> ' + fileShort + '</div><div>';
         for (const [cls, items] of Object.entries(classes)) {
             html += '<div class="test-class">';
-            if (cls !== '_module') {
-                const clsLabel = friendlyClassName(cls);
-                html += '<div class="test-class-name" onclick="toggleNode(this)">';
-                html += '<span class="toggle-arrow">▼</span> ' + escapeHtml(clsLabel) + '</div><div>';
-            }
+            if (cls !== '_module') { html += '<div class="test-class-name" onclick="toggleNode(this)"><span class="toggle-arrow">▼</span> ' + escapeHtml(friendlyClassName(cls)) + '</div><div>'; }
             for (const t of items) {
-                const status = getTestStatus(t.id);
-                const displayName = t.desc || t.name;
+                const status = getTestStatus(t.id), displayName = t.desc || t.name;
                 html += '<div class="test-item ' + status.klass + '">';
                 html += '<input type="checkbox" data-test-id="' + escapeAttr(t.id) + '">';
-                html += '<span class="test-name">';
-                html += '<span class="test-desc">' + escapeHtml(displayName) + '</span>';
-                if (t.desc) {
-                    html += '<span class="test-func">' + escapeHtml(t.name) + '</span>';
-                }
+                html += '<span class="test-name"><span class="test-desc">' + escapeHtml(displayName) + '</span>';
+                if (t.desc) html += '<span class="test-func">' + escapeHtml(t.name) + '</span>';
                 html += '</span>';
-                if (status.label) {
-                    html += '<span class="test-status ' + status.klass + '">' + status.label + '</span>';
-                }
+                if (status.label) html += '<span class="test-status ' + status.klass + '">' + status.label + '</span>';
                 html += '</div>';
                 total++;
             }
@@ -608,290 +382,307 @@ function getTestStatus(testId) {
     if (!lastReport || !lastReport.tests) return { klass: '', label: '' };
     const t = lastReport.tests.find(x => x.nodeid === testId);
     if (!t) return { klass: '', label: '' };
-    if (t.outcome === 'passed') return { klass: 'passed', label: 'PASS' };
-    return { klass: 'failed', label: 'FAIL' };
+    return t.outcome === 'passed' ? { klass: 'passed', label: 'PASS' } : { klass: 'failed', label: 'FAIL' };
 }
+function toggleNode(el) { el.classList.toggle('collapsed'); }
+function selectAll(v) { document.querySelectorAll('#testList input[type="checkbox"]').forEach(cb => cb.checked = v); }
 
-function toggleNode(el) {
-    el.classList.toggle('collapsed');
-}
-
-function selectAll(value) {
-    document.querySelectorAll('#testList input[type="checkbox"]')
-        .forEach(cb => cb.checked = value);
-}
-
+/* ============ RUN TESTS (SSE stream) ============ */
 async function runSelected() {
-    const selected = Array.from(
-        document.querySelectorAll('#testList input[type="checkbox"]:checked')
-    ).map(cb => cb.dataset.testId);
-
-    if (selected.length === 0) {
-        alert('Nenhum teste selecionado.');
-        return;
-    }
-
+    const selected = Array.from(document.querySelectorAll('#testList input[type="checkbox"]:checked')).map(cb => cb.dataset.testId);
+    if (!selected.length) { alert('Nenhum teste selecionado.'); return; }
     const btn = document.getElementById('btnRun');
-    btn.disabled = true;
-    btn.innerHTML = '<span class="spinner"></span>A iniciar...';
-
-    // Clear previous run state
-    lastReport = null;
-    clearTestBadges();
+    btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>A iniciar...';
+    lastReport = null; clearTestBadges();
     document.getElementById('output').textContent = '';
-    document.getElementById('resultDetails').innerHTML =
-        '<div class="empty">Tests are running... results stream below.</div>';
+    document.getElementById('resultDetails').innerHTML = '<div class="empty">A correr testes...</div>';
     document.getElementById('summary').style.display = 'none';
-
-    // Mark selected tests as "running" upfront
     for (const id of selected) markTestRunning(id);
-
     initProgress(selected.length);
-
-    let passCount = 0;
-    let failCount = 0;
-
+    let passCount = 0, failCount = 0;
     try {
-        const resp = await fetch('/api/run-stream', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ tests: selected }),
-        });
-
-        if (!resp.ok || !resp.body) {
-            throw new Error('Stream not available (HTTP ' + resp.status + ')');
-        }
-
-        const reader = resp.body.getReader();
-        const decoder = new TextDecoder();
+        const resp = await fetch('/api/run-stream', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tests: selected }) });
+        if (!resp.ok || !resp.body) throw new Error('Stream error HTTP ' + resp.status);
+        const reader = resp.body.getReader(), decoder = new TextDecoder();
         let buffer = '';
-
         while (true) {
             const { done, value } = await reader.read();
             if (done) break;
             buffer += decoder.decode(value, { stream: true });
-
-            const events = buffer.split('\n\n');
-            buffer = events.pop();
-
+            const events = buffer.split('\n\n'); buffer = events.pop();
             for (const ev of events) {
                 if (!ev.startsWith('data: ')) continue;
-                let data;
-                try { data = JSON.parse(ev.substring(6)); }
-                catch (_) { continue; }
-
-                if (data.type === 'start') {
-                    btn.innerHTML = '<span class="spinner"></span>0 / ' + data.total;
-                } else if (data.type === 'result') {
-                    if (data.outcome === 'passed') passCount++;
-                    else if (data.outcome === 'skipped') {}
-                    else failCount++;
-
+                let data; try { data = JSON.parse(ev.substring(6)); } catch (_) { continue; }
+                if (data.type === 'start') { btn.innerHTML = '<span class="spinner"></span>0 / ' + data.total; }
+                else if (data.type === 'result') {
+                    if (data.outcome === 'passed') passCount++; else if (data.outcome !== 'skipped') failCount++;
                     updateProgress(data.completed, data.total, passCount, failCount);
                     updateTestBadge(data.test_id, data.outcome);
-                    btn.innerHTML = '<span class="spinner"></span>' +
-                        data.completed + ' / ' + data.total;
-
+                    btn.innerHTML = '<span class="spinner"></span>' + data.completed + ' / ' + data.total;
                     appendOutput(data.test_id + ' ' + data.outcome.toUpperCase());
-                } else if (data.type === 'output') {
-                    if (data.line && data.line.trim()) appendOutput(data.line);
-                } else if (data.type === 'done') {
-                    if (data.report) {
-                        lastReport = data.report;
-                        updateSummary();
-                        renderTests();
-                    }
+                } else if (data.type === 'output') { if (data.line && data.line.trim()) appendOutput(data.line); }
+                else if (data.type === 'done') {
+                    if (data.report) { lastReport = data.report; updateSummary(); renderTests(); updateTopology(); }
                     showTabByName('results');
                 }
             }
         }
-    } catch (e) {
-        alert('Erro: ' + e.message);
-    } finally {
-        btn.disabled = false;
-        btn.innerHTML = '▶ Run Selected';
-        document.getElementById('progressLabel').textContent = 'Concluído';
-    }
+    } catch (e) { alert('Erro: ' + e.message); }
+    finally { btn.disabled = false; btn.innerHTML = 'Run Selected'; document.getElementById('progressLabel').textContent = 'Concluido'; }
 }
 
+/* ============ PROGRESS ============ */
 function initProgress(total) {
     document.getElementById('progressWrap').style.display = 'block';
     document.getElementById('progressBar').style.width = '0%';
     document.getElementById('progressBar').classList.remove('has-fail');
-    document.getElementById('progressLabel').textContent = 'A correr…';
+    document.getElementById('progressLabel').textContent = 'A correr...';
     document.getElementById('progressPass').textContent = '0';
     document.getElementById('progressFail').textContent = '0';
     document.getElementById('progressTotal').textContent = total;
 }
-
 function updateProgress(completed, total, passed, failed) {
-    const pct = total > 0 ? (completed / total * 100) : 0;
-    const bar = document.getElementById('progressBar');
-    bar.style.width = pct + '%';
-    if (failed > 0) bar.classList.add('has-fail');
+    document.getElementById('progressBar').style.width = (completed / total * 100) + '%';
+    if (failed > 0) document.getElementById('progressBar').classList.add('has-fail');
     document.getElementById('progressPass').textContent = passed;
     document.getElementById('progressFail').textContent = failed;
 }
 
+/* ============ TEST BADGES ============ */
 function clearTestBadges() {
     document.querySelectorAll('#testList .test-item').forEach(item => {
         item.classList.remove('passed', 'failed', 'skipped', 'running');
-        const badge = item.querySelector('.test-status');
-        if (badge) badge.remove();
+        const b = item.querySelector('.test-status'); if (b) b.remove();
     });
 }
-
 function markTestRunning(testId) {
-    const cb = document.querySelector(
-        '#testList input[data-test-id="' + cssEscape(testId) + '"]'
-    );
-    if (!cb) return;
-    const item = cb.closest('.test-item');
-    if (!item) return;
+    const cb = document.querySelector('#testList input[data-test-id="' + cssEscape(testId) + '"]');
+    if (!cb) return; const item = cb.closest('.test-item'); if (!item) return;
     item.classList.add('running');
     const badge = item.querySelector('.test-status') || document.createElement('span');
-    badge.className = 'test-status running';
-    badge.textContent = '…';
+    badge.className = 'test-status running'; badge.textContent = '...';
     if (!badge.parentElement) item.appendChild(badge);
 }
-
 function updateTestBadge(testId, outcome) {
-    const cb = document.querySelector(
-        '#testList input[data-test-id="' + cssEscape(testId) + '"]'
-    );
-    if (!cb) return;
-    const item = cb.closest('.test-item');
-    if (!item) return;
+    const cb = document.querySelector('#testList input[data-test-id="' + cssEscape(testId) + '"]');
+    if (!cb) return; const item = cb.closest('.test-item'); if (!item) return;
     item.classList.remove('passed', 'failed', 'skipped', 'running');
-    const klass = outcome === 'passed' ? 'passed'
-                : outcome === 'skipped' ? 'skipped' : 'failed';
+    const klass = outcome === 'passed' ? 'passed' : outcome === 'skipped' ? 'skipped' : 'failed';
     item.classList.add(klass);
     let badge = item.querySelector('.test-status');
-    if (!badge) {
-        badge = document.createElement('span');
-        item.appendChild(badge);
-    }
-    badge.className = 'test-status ' + klass;
-    badge.textContent = outcome.toUpperCase();
+    if (!badge) { badge = document.createElement('span'); item.appendChild(badge); }
+    badge.className = 'test-status ' + klass; badge.textContent = outcome.toUpperCase();
 }
+function appendOutput(line) { const o = document.getElementById('output'); o.textContent += line + '\n'; o.scrollTop = o.scrollHeight; }
+function cssEscape(s) { return (window.CSS && CSS.escape) ? CSS.escape(s) : String(s).replace(/[^\w-]/g, '\\$&'); }
 
-function appendOutput(line) {
-    const out = document.getElementById('output');
-    out.textContent += line + '\n';
-    out.scrollTop = out.scrollHeight;
-}
-
-function cssEscape(s) {
-    if (window.CSS && CSS.escape) return CSS.escape(s);
-    return String(s).replace(/[^\w-]/g, '\\$&');
-}
-
+/* ============ RESULTS SUMMARY ============ */
 function updateSummary() {
     if (!lastReport) return;
     document.getElementById('summary').style.display = 'grid';
     const s = lastReport.summary || {};
-    const total = s.total || ((s.passed || 0) + (s.failed || 0) + (s.error || 0));
-    document.getElementById('numTotal').textContent = total;
+    document.getElementById('numTotal').textContent = s.total || 0;
     document.getElementById('numPassed').textContent = s.passed || 0;
     document.getElementById('numFailed').textContent = (s.failed || 0) + (s.error || 0);
-    document.getElementById('duration').textContent =
-        ((lastReport.duration || 0).toFixed(1)) + 's';
-
+    document.getElementById('duration').textContent = ((lastReport.duration || 0).toFixed(1)) + 's';
     const details = document.getElementById('resultDetails');
     let html = '';
     const failed = (lastReport.tests || []).filter(t => t.outcome !== 'passed');
     const passed = (lastReport.tests || []).filter(t => t.outcome === 'passed');
-
-    if (failed.length > 0) {
-        html += '<h3 style="margin: 8px 0; color: var(--fail);">Failed (' + failed.length + ')</h3>';
+    if (failed.length) {
+        html += '<h3 style="margin:8px 0;color:var(--fail);">Failed (' + failed.length + ')</h3>';
         for (const t of failed) {
-            const desc = getTestDesc(t.nodeid);
-            const funcName = t.nodeid.split('::').pop();
-            html += '<div class="result-row failed"><span class="icon">✗</span>' +
-                escapeHtml(desc || funcName) +
-                (desc ? '<span style="color:var(--fg-dim);font-size:10px;margin-left:8px;">' + escapeHtml(funcName) + '</span>' : '') +
-                '</div>';
+            const desc = getTestDesc(t.nodeid), fn = t.nodeid.split('::').pop();
+            html += '<div class="result-row failed"><span class="icon">x</span>' + escapeHtml(desc || fn) +
+                (desc ? '<span style="color:var(--fg-dim);font-size:10px;margin-left:8px;">' + escapeHtml(fn) + '</span>' : '') + '</div>';
             const lr = (t.call && t.call.longrepr) || t.longrepr || '';
             if (lr) html += '<div class="failure-detail">' + escapeHtml(lr) + '</div>';
         }
     }
-    if (passed.length > 0) {
-        html += '<h3 style="margin: 12px 0 8px; color: var(--success);">Passed (' + passed.length + ')</h3>';
+    if (passed.length) {
+        html += '<h3 style="margin:12px 0 8px;color:var(--success);">Passed (' + passed.length + ')</h3>';
         for (const t of passed) {
-            const desc = getTestDesc(t.nodeid);
-            const funcName = t.nodeid.split('::').pop();
-            html += '<div class="result-row passed"><span class="icon">✓</span>' +
-                escapeHtml(desc || funcName) +
-                (desc ? '<span style="color:var(--fg-dim);font-size:10px;margin-left:8px;">' + escapeHtml(funcName) + '</span>' : '') +
-                '</div>';
+            const desc = getTestDesc(t.nodeid), fn = t.nodeid.split('::').pop();
+            html += '<div class="result-row passed"><span class="icon">&#10003;</span>' + escapeHtml(desc || fn) +
+                (desc ? '<span style="color:var(--fg-dim);font-size:10px;margin-left:8px;">' + escapeHtml(fn) + '</span>' : '') + '</div>';
         }
     }
     details.innerHTML = html || '<div class="empty">Sem resultados.</div>';
 }
 
+/* ============ DYNAMIC TOPOLOGY ============ */
+const DIRECTION_MAP = {
+    'TestWanToDmz': 'wan-dmz', 'TestWanToLan': 'wan-lan', 'TestLanToWan': 'lan-wan',
+    'TestLanToDmz': 'lan-dmz', 'TestDmzToLan': 'dmz-lan', 'TestDmzToWan': 'dmz-wan',
+};
+const DIRECTION_LINKS = {
+    'wan-dmz': ['link-wan-fw', 'link-dmz-fw'], 'wan-lan': ['link-wan-fw', 'link-lan1-fw'],
+    'lan-wan': ['link-lan1-fw', 'link-wan-fw'], 'lan-dmz': ['link-lan1-fw', 'link-dmz-fw'],
+    'dmz-lan': ['link-dmz-fw', 'link-lan1-fw'], 'dmz-wan': ['link-dmz-fw', 'link-wan-fw'],
+};
+
+function updateTopology() {
+    if (!lastReport || !lastReport.tests) return;
+    // Aggregate results per direction
+    const dirResults = {};
+    for (const t of lastReport.tests) {
+        const parts = t.nodeid.split('::');
+        const cls = parts.length >= 3 ? parts[1] : null;
+        if (!cls || !DIRECTION_MAP[cls]) continue;
+        const dir = DIRECTION_MAP[cls];
+        if (!dirResults[dir]) dirResults[dir] = { passed: 0, failed: 0 };
+        if (t.outcome === 'passed') dirResults[dir].passed++; else dirResults[dir].failed++;
+    }
+    // Update badges
+    for (const [dir, res] of Object.entries(dirResults)) {
+        const badge = document.getElementById('badge-' + dir);
+        if (!badge) continue;
+        const rect = badge.querySelector('rect');
+        const text = badge.querySelector('text');
+        const allPass = res.failed === 0;
+        const color = allPass ? '#3fb950' : '#f85149';
+        rect.setAttribute('fill', allPass ? '#122117' : '#2a1215');
+        rect.setAttribute('stroke', color);
+        text.setAttribute('fill', color);
+    }
+    // Update links (green if all directions using it pass, red if any fail)
+    const linkStatus = {};
+    for (const [dir, res] of Object.entries(dirResults)) {
+        const links = DIRECTION_LINKS[dir] || [];
+        for (const linkId of links) {
+            if (!linkStatus[linkId]) linkStatus[linkId] = { anyFail: false, tested: true };
+            if (res.failed > 0) linkStatus[linkId].anyFail = true;
+        }
+    }
+    for (const [linkId, st] of Object.entries(linkStatus)) {
+        const el = document.getElementById(linkId);
+        if (!el) continue;
+        el.setAttribute('stroke', st.anyFail ? '#f85149' : '#3fb950');
+        el.setAttribute('opacity', '0.9');
+        el.setAttribute('stroke-width', '3');
+        el.setAttribute('stroke-dasharray', st.anyFail ? '4,4' : 'none');
+    }
+    document.getElementById('topoLegend').innerHTML =
+        '<span style="color:var(--success);">&#9608; Link OK</span> &nbsp; ' +
+        '<span style="color:var(--fail);">&#9608; Teste falhou</span> &nbsp; ' +
+        '<span style="color:var(--fg-dim);">&#9608; Sem dados</span>';
+}
+
+/* ============ BENCHMARK ============ */
+async function runBenchmark() {
+    const btn = document.getElementById('btnBench');
+    btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>A medir (50 pings x 5 rotas)...';
+    document.getElementById('benchResults').innerHTML = '<div class="empty"><span class="spinner"></span> A correr benchmark... ~5 segundos</div>';
+    showTabByName('benchmark');
+    try {
+        const data = await api('POST', '/api/benchmark');
+        renderBenchmark(data);
+    } catch (e) { document.getElementById('benchResults').innerHTML = '<div class="empty" style="color:var(--fail)">Erro: ' + e.message + '</div>'; }
+    finally { btn.disabled = false; btn.innerHTML = 'Run Benchmark'; }
+}
+
+function renderBenchmark(data) {
+    const el = document.getElementById('benchResults');
+    if (!data || !data.length) { el.innerHTML = '<div class="empty">Sem resultados.</div>'; return; }
+    const globalMax = Math.max(...data.map(d => d.max || 0)) * 1.2;
+    const colors = ['#58a6ff', '#3fb950', '#d29922', '#f778ba', '#a371f7'];
+    let html = '';
+    for (let i = 0; i < data.length; i++) {
+        const d = data[i], c = colors[i % colors.length];
+        const barW = d.avg ? (d.avg / globalMax * 100) : 0;
+        html += '<div class="bench-row">';
+        html += '<div class="bench-label">' + escapeHtml(d.label) + '<div style="font-size:9px;color:var(--fg-dim);font-weight:normal;">' + escapeHtml(d.hops) + '</div></div>';
+        html += '<div class="bench-bar-wrap"><div class="bench-bar" style="width:' + barW + '%;background:' + c + ';">' + (d.avg || 0).toFixed(2) + ' ms</div></div>';
+        html += '<div class="bench-stats">min ' + (d.min || 0).toFixed(2) + ' / max ' + (d.max || 0).toFixed(2) + ' ms</div>';
+        html += '</div>';
+        // Histogram
+        if (d.rtts && d.rtts.length) {
+            html += '<div class="histo-wrap"><div class="histo-title" style="color:' + c + ';">' + escapeHtml(d.label) + ' — distribuicao RTT</div>';
+            const bins = buildHistogram(d.rtts, 25);
+            const maxBin = Math.max(...bins.map(b => b.count));
+            html += '<div class="histo-bars">';
+            for (const b of bins) {
+                const h = maxBin > 0 ? (b.count / maxBin * 100) : 0;
+                html += '<div class="histo-bar" style="height:' + h + '%;background:' + c + ';" title="' + b.lo.toFixed(2) + '-' + b.hi.toFixed(2) + ' ms: ' + b.count + ' pings"></div>';
+            }
+            html += '</div>';
+            html += '<div class="histo-axis"><span>' + bins[0].lo.toFixed(2) + ' ms</span><span>' + bins[bins.length-1].hi.toFixed(2) + ' ms</span></div>';
+            html += '</div>';
+        }
+    }
+    el.innerHTML = html;
+}
+
+function buildHistogram(values, numBins) {
+    const min = Math.min(...values), max = Math.max(...values);
+    const range = max - min || 0.01;
+    const step = range / numBins;
+    const bins = [];
+    for (let i = 0; i < numBins; i++) {
+        bins.push({ lo: min + i * step, hi: min + (i + 1) * step, count: 0 });
+    }
+    for (const v of values) {
+        let idx = Math.floor((v - min) / step);
+        if (idx >= numBins) idx = numBins - 1;
+        bins[idx].count++;
+    }
+    return bins;
+}
+
+/* ============ EXPORT PDF ============ */
+async function exportPdf() {
+    const btn = document.getElementById('btnPdf');
+    btn.disabled = true; btn.textContent = 'A gerar...';
+    try {
+        const resp = await fetch('/api/export-pdf');
+        if (!resp.ok) { const e = await resp.json(); alert(e.error || 'Erro'); return; }
+        const blob = await resp.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url;
+        a.download = 'firewall-report.pdf'; a.click();
+        URL.revokeObjectURL(url);
+    } catch (e) { alert('Erro: ' + e.message); }
+    finally { btn.disabled = false; btn.textContent = 'Export PDF'; }
+}
+
+/* ============ RULES ============ */
 async function loadRules() {
     const data = await api('GET', '/api/rules');
-    document.getElementById('rules').textContent =
-        data.error || data.ruleset || 'Sem ruleset (topologia down?)';
+    document.getElementById('rules').textContent = data.error || data.ruleset || 'Sem ruleset (topologia down?)';
     showTabByName('rules');
 }
 
-function showTab(el) {
-    const name = el.dataset.tab;
-    showTabByName(name);
-}
-
+/* ============ TABS ============ */
+function showTab(el) { showTabByName(el.dataset.tab); }
 function showTabByName(name) {
-    document.querySelectorAll('.tab').forEach(t => {
-        t.classList.toggle('active', t.dataset.tab === name);
-    });
-    document.querySelectorAll('.tab-content').forEach(c => {
-        c.classList.toggle('active', c.id === 'tab-' + name);
-    });
+    document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.toggle('active', c.id === 'tab-' + name));
 }
 
+/* ============ HELPERS ============ */
 function getTestDesc(nodeid) {
-    for (const [file, classes] of Object.entries(testsData)) {
-        if (file.startsWith('_')) continue;
-        for (const [cls, items] of Object.entries(classes)) {
-            for (const t of items) {
-                if (t.id === nodeid) return t.desc || '';
-            }
-        }
+    for (const [f, cls] of Object.entries(testsData)) {
+        if (f.startsWith('_')) continue;
+        for (const [c, items] of Object.entries(cls)) { for (const t of items) { if (t.id === nodeid) return t.desc || ''; } }
     }
     return '';
 }
 
 function friendlyClassName(cls) {
     const map = {
-        'TestWanToDmz':           'WAN → DMZ',
-        'TestWanToLan':           'WAN → LAN (bloqueado)',
-        'TestLanToWan':           'LAN → WAN',
-        'TestLanToDmz':           'LAN → DMZ',
-        'TestDmzToLan':           'DMZ → LAN (bloqueado)',
-        'TestDmzToWan':           'DMZ → WAN',
-        'TestStatefulFiltering':  'Connection Tracking (stateful)',
-        'TestDNAT':               'DNAT (WAN → DMZ)',
-        'TestMasquerade':         'Masquerade / SNAT',
-        'TestICMPRateLimit':      'Rate Limit ICMP (→3 firewall)',
-        'TestICMPBetweenZones':   'ICMP entre zonas',
-        'TestFirewallLogging':    'Logging / Counters',
-        'TestTCPFiltering':       'Filtragem TCP',
-        'TestUDPFiltering':       'Filtragem UDP',
-        'TestICMPFiltering':      'Filtragem ICMP',
+        'TestWanToDmz':'WAN → DMZ', 'TestWanToLan':'WAN → LAN (bloqueado)', 'TestLanToWan':'LAN → WAN',
+        'TestLanToDmz':'LAN → DMZ', 'TestDmzToLan':'DMZ → LAN (bloqueado)', 'TestDmzToWan':'DMZ → WAN',
+        'TestStatefulFiltering':'Connection Tracking (stateful)', 'TestDNAT':'DNAT (WAN → DMZ)',
+        'TestMasquerade':'Masquerade / SNAT', 'TestICMPRateLimit':'Rate Limit ICMP',
+        'TestICMPBetweenZones':'ICMP entre zonas', 'TestFirewallLogging':'Logging / Counters',
+        'TestTCPFiltering':'Filtragem TCP', 'TestUDPFiltering':'Filtragem UDP', 'TestICMPFiltering':'Filtragem ICMP',
     };
     return map[cls] || cls.replace(/([A-Z])/g, ' $1').trim();
 }
+function escapeHtml(s) { const d = document.createElement('div'); d.textContent = String(s); return d.innerHTML; }
+function escapeAttr(s) { return String(s).replace(/"/g, '&quot;'); }
 
-function escapeHtml(s) {
-    const div = document.createElement('div');
-    div.textContent = String(s);
-    return div.innerHTML;
-}
-function escapeAttr(s) {
-    return String(s).replace(/"/g, '&quot;');
-}
-
+/* ============ INIT ============ */
 refreshStatus();
 loadTests();
 setInterval(refreshStatus, 5000);

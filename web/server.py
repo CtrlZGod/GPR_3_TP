@@ -6,6 +6,7 @@ import re
 import sys
 import json
 import subprocess
+from datetime import datetime
 from flask import Flask, Response, jsonify, request, send_from_directory, stream_with_context
 
 # Use the SAME interpreter the server is running with — otherwise sudo
@@ -278,6 +279,151 @@ def counters():
         )
         out[chain] = r.stdout
     return jsonify(out)
+
+
+@app.route("/api/benchmark", methods=["POST"])
+def benchmark():
+    """Run ping benchmarks between zone pairs and return individual RTTs."""
+    pairs = [
+        {"label": "LAN → Firewall",   "ns": "ns-lan", "target": "10.0.2.1",  "hops": "direto"},
+        {"label": "LAN → WAN",        "ns": "ns-lan", "target": "10.0.1.10", "hops": "via FW + masquerade"},
+        {"label": "LAN → DMZ",        "ns": "ns-lan", "target": "10.0.3.10", "hops": "via FW"},
+        {"label": "WAN → DMZ (DNAT)", "ns": "ns-wan", "target": "10.0.1.1",  "hops": "via FW + DNAT"},
+        {"label": "DMZ → WAN",        "ns": "ns-dmz", "target": "10.0.1.10", "hops": "via FW + masquerade"},
+    ]
+    results = []
+    for pair in pairs:
+        r = subprocess.run(
+            ["ip", "netns", "exec", pair["ns"],
+             "ping", "-c", "50", "-i", "0.02", pair["target"]],
+            capture_output=True, text=True, timeout=30,
+        )
+        rtts = []
+        for line in r.stdout.splitlines():
+            m = re.search(r"time[=<]([\d.]+)", line)
+            if m:
+                rtts.append(float(m.group(1)))
+
+        stats = {
+            "label": pair["label"],
+            "hops": pair["hops"],
+            "rtts": rtts,
+            "count": len(rtts),
+        }
+        if rtts:
+            stats["min"] = round(min(rtts), 3)
+            stats["avg"] = round(sum(rtts) / len(rtts), 3)
+            stats["max"] = round(max(rtts), 3)
+        results.append(stats)
+
+    return jsonify(results)
+
+
+@app.route("/api/export-pdf")
+def export_pdf():
+    """Generate a PDF test report from the last test run."""
+    try:
+        from fpdf import FPDF
+    except ImportError:
+        return jsonify({"error": "fpdf2 not installed. Run: pip install fpdf2"}), 500
+
+    if not os.path.exists(JSON_REPORT):
+        return jsonify({"error": "No test results. Run tests first."}), 400
+
+    with open(JSON_REPORT) as f:
+        report = json.load(f)
+
+    tests = report.get("tests", [])
+    if not tests:
+        return jsonify({"error": "No test results in report."}), 400
+
+    s = report.get("summary", {})
+    passed = [t for t in tests if t["outcome"] == "passed"]
+    failed = [t for t in tests if t["outcome"] != "passed"]
+    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    pdf = FPDF()
+    pdf.set_auto_page_break(auto=True, margin=20)
+    pdf.add_page()
+
+    # --- Title ---
+    pdf.set_font("Helvetica", "B", 20)
+    pdf.cell(0, 14, "Firewall Test Report", ln=True, align="C")
+    pdf.set_font("Helvetica", "", 10)
+    pdf.set_text_color(120, 120, 120)
+    pdf.cell(0, 7, f"Tema 18 - Firewall por Regras + Testes Automatizados", ln=True, align="C")
+    pdf.cell(0, 7, f"Generated: {now}", ln=True, align="C")
+    pdf.set_text_color(0, 0, 0)
+    pdf.ln(8)
+
+    # --- Summary box ---
+    pdf.set_fill_color(240, 240, 240)
+    pdf.set_font("Helvetica", "B", 12)
+    pdf.cell(0, 10, "  Summary", ln=True, fill=True)
+    pdf.set_font("Helvetica", "", 11)
+    total = s.get("total", len(tests))
+    dur = report.get("duration", 0)
+    pdf.cell(47, 8, f"Total: {total}", border=1, align="C")
+    pdf.set_text_color(40, 160, 40)
+    pdf.cell(47, 8, f"Passed: {s.get('passed', len(passed))}", border=1, align="C")
+    pdf.set_text_color(220, 50, 50)
+    pdf.cell(47, 8, f"Failed: {s.get('failed', len(failed))}", border=1, align="C")
+    pdf.set_text_color(0, 0, 0)
+    pdf.cell(47, 8, f"Duration: {dur:.1f}s", border=1, align="C", ln=True)
+    pdf.ln(8)
+
+    # --- Failed tests ---
+    if failed:
+        pdf.set_font("Helvetica", "B", 12)
+        pdf.set_text_color(220, 50, 50)
+        pdf.cell(0, 10, f"Failed ({len(failed)})", ln=True)
+        pdf.set_text_color(60, 60, 60)
+        pdf.set_font("Helvetica", "", 9)
+        for t in failed:
+            parts = t["nodeid"].split("::")
+            name = parts[-1]
+            cls = parts[-2] if len(parts) >= 3 else ""
+            pdf.cell(0, 5, f"  FAIL   {cls}::{name}", ln=True)
+            longrepr = ""
+            if isinstance(t.get("call"), dict):
+                longrepr = t["call"].get("longrepr", "")
+            elif isinstance(t.get("longrepr"), str):
+                longrepr = t["longrepr"]
+            if longrepr:
+                pdf.set_font("Courier", "", 7)
+                for lr_line in str(longrepr).splitlines()[:6]:
+                    pdf.cell(0, 4, f"         {lr_line[:100]}", ln=True)
+                pdf.set_font("Helvetica", "", 9)
+        pdf.ln(4)
+
+    # --- Passed tests ---
+    if passed:
+        pdf.set_font("Helvetica", "B", 12)
+        pdf.set_text_color(40, 160, 40)
+        pdf.cell(0, 10, f"Passed ({len(passed)})", ln=True)
+        pdf.set_text_color(60, 60, 60)
+        pdf.set_font("Helvetica", "", 9)
+        for t in passed:
+            parts = t["nodeid"].split("::")
+            name = parts[-1]
+            cls = parts[-2] if len(parts) >= 3 else ""
+            dur_t = t.get("duration", 0)
+            pdf.cell(0, 5, f"  PASS   {cls}::{name}  ({dur_t:.2f}s)", ln=True)
+
+    # --- Footer ---
+    pdf.ln(10)
+    pdf.set_font("Helvetica", "I", 8)
+    pdf.set_text_color(150, 150, 150)
+    pdf.cell(0, 5, "Generated by Firewall Test Dashboard", ln=True, align="C")
+
+    content = pdf.output()
+    return Response(
+        content,
+        mimetype="application/pdf",
+        headers={
+            "Content-Disposition": f'attachment; filename="firewall-report-{datetime.now():%Y%m%d-%H%M}.pdf"',
+        },
+    )
 
 
 if __name__ == "__main__":
