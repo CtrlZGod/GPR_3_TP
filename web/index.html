@@ -630,15 +630,33 @@ function buildHistogram(values, numBins) {
 }
 
 /* ============ EXPORT PDF ============ */
-function exportPdf() {
-    // Direct download via anchor — avoids fetch+blob issues with binary
-    // responses through ngrok/proxies
-    const a = document.createElement('a');
-    a.href = '/api/export-pdf';
-    a.download = 'firewall-report.pdf';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+async function exportPdf() {
+    const btn = document.getElementById('btnPdf');
+    btn.disabled = true; btn.textContent = 'A gerar...';
+    try {
+        const resp = await fetch('/api/export-pdf', {
+            headers: {
+                'Accept': 'application/pdf',
+                'ngrok-skip-browser-warning': 'true',
+            },
+        });
+        if (!resp.ok) {
+            let msg = 'Erro ' + resp.status;
+            try { const e = await resp.json(); msg = e.error || msg; } catch(_) {}
+            alert(msg);
+            return;
+        }
+        const blob = await resp.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'firewall-report.pdf';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch (e) { alert('Erro ao exportar: ' + e.message); }
+    finally { btn.disabled = false; btn.textContent = 'Export PDF'; }
 }
 
 /* ============ RULES ============ */

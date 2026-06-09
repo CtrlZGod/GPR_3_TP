@@ -26,6 +26,13 @@ NAMESPACES = ["ns-wan", "ns-lan", "ns-lan2", "ns-dmz", "ns-fw"]
 app = Flask(__name__, static_folder=WEB_DIR)
 
 
+@app.after_request
+def add_ngrok_header(response):
+    """Add header so ngrok doesn't inject its browser warning page."""
+    response.headers["ngrok-skip-browser-warning"] = "true"
+    return response
+
+
 @app.route("/")
 def index():
     return send_from_directory(WEB_DIR, "index.html")
